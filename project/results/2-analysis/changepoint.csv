@@ -1,0 +1,3 @@
+machine_id,sesi,tanggal_titik_ubah,sesi_sebelum,sesi_sesudah,rata_sebelum_resid,rata_sesudah_resid,selisih_g,persen_dari_rata,t_welch,p_permutasi
+PT-01,559,2026-06-02,395,164,133.0244986,101.0389142,-31.98558443,-0.00414741841,1.138972586,0.903654485
+PT-02,600,2026-05-23,350,250,144.5118471,-478.7768215,-623.2886686,-0.08348595162,27.87584315,0.003322259136

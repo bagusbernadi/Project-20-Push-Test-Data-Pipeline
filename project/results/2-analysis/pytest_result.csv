@@ -1,0 +1,12 @@
+tes,hasil
+test_normal_file,lulus
+test_thousand_separator_us_format,lulus
+test_dot_thousand_comma_decimal,lulus
+test_new_machine_format_goes_to_quarantine,lulus
+test_empty_file,lulus
+test_truncated_file,lulus
+test_missing_header_field,lulus
+test_non_numeric_value,lulus
+test_out_of_range_values_flagged,lulus
+test_duplicate_and_idempotent,lulus
+test_judgement_uses_spec,lulus

@@ -1,0 +1,200 @@
+cek,item,dibandingkan,cocok
+SQL vs pandas (parser independen),per sesi: n,1159,1159
+SQL vs pandas (parser independen),per sesi: mean_g,1159,1159
+SQL vs pandas (parser independen),per sesi: min_g,1159,1159
+SQL vs pandas (parser independen),per sesi: max_g,1159,1159
+SQL vs pandas (parser independen),per sesi: sd_g,1159,1159
+SQL vs pandas (parser independen),Model A after_oven: n,1,1
+SQL vs pandas (parser independen),Model A after_oven: mean_g,1,1
+SQL vs pandas (parser independen),Model A after_oven: sd_g,1,1
+SQL vs pandas (parser independen),Model A after_oven: cpk,1,1
+SQL vs pandas (parser independen),Model A after_oven: oos_rate,1,1
+SQL vs pandas (parser independen),Model A before_oven: n,1,1
+SQL vs pandas (parser independen),Model A before_oven: mean_g,1,1
+SQL vs pandas (parser independen),Model A before_oven: sd_g,1,1
+SQL vs pandas (parser independen),Model A before_oven: cpk,1,1
+SQL vs pandas (parser independen),Model A before_oven: oos_rate,1,1
+SQL vs pandas (parser independen),Model B after_oven: n,1,1
+SQL vs pandas (parser independen),Model B after_oven: mean_g,1,1
+SQL vs pandas (parser independen),Model B after_oven: sd_g,1,1
+SQL vs pandas (parser independen),Model B after_oven: cpk,1,1
+SQL vs pandas (parser independen),Model B after_oven: oos_rate,1,1
+SQL vs pandas (parser independen),Model B before_oven: n,1,1
+SQL vs pandas (parser independen),Model B before_oven: mean_g,1,1
+SQL vs pandas (parser independen),Model B before_oven: sd_g,1,1
+SQL vs pandas (parser independen),Model B before_oven: cpk,1,1
+SQL vs pandas (parser independen),Model B before_oven: oos_rate,1,1
+SQL vs Excel (LibreOffice),Model A after_oven: n,1,1
+SQL vs Excel (LibreOffice),Model A after_oven: mean_g,1,1
+SQL vs Excel (LibreOffice),Model A after_oven: min_g,1,1
+SQL vs Excel (LibreOffice),Model A after_oven: max_g,1,1
+SQL vs Excel (LibreOffice),Model A after_oven: sd_g,1,1
+SQL vs Excel (LibreOffice),Model A after_oven: cpk,1,1
+SQL vs Excel (LibreOffice),Model A before_oven: n,1,1
+SQL vs Excel (LibreOffice),Model A before_oven: mean_g,1,1
+SQL vs Excel (LibreOffice),Model A before_oven: min_g,1,1
+SQL vs Excel (LibreOffice),Model A before_oven: max_g,1,1
+SQL vs Excel (LibreOffice),Model A before_oven: sd_g,1,1
+SQL vs Excel (LibreOffice),Model A before_oven: cpk,1,1
+SQL vs Excel (LibreOffice),Model B after_oven: n,1,1
+SQL vs Excel (LibreOffice),Model B after_oven: mean_g,1,1
+SQL vs Excel (LibreOffice),Model B after_oven: min_g,1,1
+SQL vs Excel (LibreOffice),Model B after_oven: max_g,1,1
+SQL vs Excel (LibreOffice),Model B after_oven: sd_g,1,1
+SQL vs Excel (LibreOffice),Model B after_oven: cpk,1,1
+SQL vs Excel (LibreOffice),Model B before_oven: n,1,1
+SQL vs Excel (LibreOffice),Model B before_oven: mean_g,1,1
+SQL vs Excel (LibreOffice),Model B before_oven: min_g,1,1
+SQL vs Excel (LibreOffice),Model B before_oven: max_g,1,1
+SQL vs Excel (LibreOffice),Model B before_oven: sd_g,1,1
+SQL vs Excel (LibreOffice),Model B before_oven: cpk,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260401_Shift1_ModelA_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260401_Shift1_ModelA_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260401_Shift1_ModelA_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260401_Shift1_ModelA_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260401_Shift1_ModelA_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260406_Shift2_ModelB_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260406_Shift2_ModelB_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260406_Shift2_ModelB_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260406_Shift2_ModelB_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260406_Shift2_ModelB_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260412_Shift1_ModelA_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260412_Shift1_ModelA_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260412_Shift1_ModelA_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260412_Shift1_ModelA_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260412_Shift1_ModelA_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260418_Shift1_ModelB_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260418_Shift1_ModelB_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260418_Shift1_ModelB_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260418_Shift1_ModelB_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260418_Shift1_ModelB_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260425_Shift2_ModelA_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260425_Shift2_ModelA_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260425_Shift2_ModelA_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260425_Shift2_ModelA_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260425_Shift2_ModelA_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260430_Shift1_ModelA_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260430_Shift1_ModelA_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260430_Shift1_ModelA_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260430_Shift1_ModelA_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260430_Shift1_ModelA_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260506_Shift1_ModelA_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260506_Shift1_ModelA_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260506_Shift1_ModelA_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260506_Shift1_ModelA_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260506_Shift1_ModelA_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260512_Shift2_ModelB_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260512_Shift2_ModelB_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260512_Shift2_ModelB_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260512_Shift2_ModelB_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260512_Shift2_ModelB_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260519_Shift1_ModelB_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260519_Shift1_ModelB_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260519_Shift1_ModelB_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260519_Shift1_ModelB_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260519_Shift1_ModelB_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260526_Shift1_ModelB_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260526_Shift1_ModelB_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260526_Shift1_ModelB_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260526_Shift1_ModelB_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260526_Shift1_ModelB_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260531_Shift1_ModelB_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260531_Shift1_ModelB_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260531_Shift1_ModelB_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260531_Shift1_ModelB_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260531_Shift1_ModelB_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260607_Shift2_ModelB_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260607_Shift2_ModelB_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260607_Shift2_ModelB_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260607_Shift2_ModelB_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260607_Shift2_ModelB_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260613_Shift2_ModelA_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260613_Shift2_ModelA_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260613_Shift2_ModelA_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260613_Shift2_ModelA_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260613_Shift2_ModelA_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260619_Shift2_ModelB_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260619_Shift2_ModelB_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260619_Shift2_ModelB_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260619_Shift2_ModelB_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260619_Shift2_ModelB_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260626_Shift1_ModelA_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260626_Shift1_ModelA_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260626_Shift1_ModelA_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260626_Shift1_ModelA_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-01_20260626_Shift1_ModelA_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260402_Shift2_ModelB_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260402_Shift2_ModelB_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260402_Shift2_ModelB_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260402_Shift2_ModelB_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260402_Shift2_ModelB_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260409_Shift1_ModelB_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260409_Shift1_ModelB_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260409_Shift1_ModelB_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260409_Shift1_ModelB_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260409_Shift1_ModelB_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260415_Shift1_ModelA_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260415_Shift1_ModelA_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260415_Shift1_ModelA_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260415_Shift1_ModelA_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260415_Shift1_ModelA_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260419_Shift2_ModelA_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260419_Shift2_ModelA_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260419_Shift2_ModelA_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260419_Shift2_ModelA_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260419_Shift2_ModelA_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260424_Shift1_ModelB_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260424_Shift1_ModelB_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260424_Shift1_ModelB_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260424_Shift1_ModelB_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260424_Shift1_ModelB_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260430_Shift1_ModelA_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260430_Shift1_ModelA_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260430_Shift1_ModelA_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260430_Shift1_ModelA_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260430_Shift1_ModelA_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260506_Shift1_ModelB_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260506_Shift1_ModelB_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260506_Shift1_ModelB_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260506_Shift1_ModelB_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260506_Shift1_ModelB_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260513_Shift1_ModelA_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260513_Shift1_ModelA_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260513_Shift1_ModelA_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260513_Shift1_ModelA_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260513_Shift1_ModelA_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260517_Shift2_ModelB_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260517_Shift2_ModelB_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260517_Shift2_ModelB_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260517_Shift2_ModelB_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260517_Shift2_ModelB_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260523_Shift1_ModelB_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260523_Shift1_ModelB_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260523_Shift1_ModelB_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260523_Shift1_ModelB_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260523_Shift1_ModelB_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260529_Shift1_ModelB_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260529_Shift1_ModelB_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260529_Shift1_ModelB_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260529_Shift1_ModelB_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260529_Shift1_ModelB_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260604_Shift2_ModelB_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260604_Shift2_ModelB_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260604_Shift2_ModelB_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260604_Shift2_ModelB_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260604_Shift2_ModelB_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260610_Shift2_ModelA_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260610_Shift2_ModelA_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260610_Shift2_ModelA_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260610_Shift2_ModelA_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260610_Shift2_ModelA_b: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260616_Shift2_ModelB_a: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260616_Shift2_ModelB_a: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260616_Shift2_ModelB_a: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260616_Shift2_ModelB_a: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260616_Shift2_ModelB_a: sd_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260622_Shift1_ModelB_b: n,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260622_Shift1_ModelB_b: mean_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260622_Shift1_ModelB_b: min_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260622_Shift1_ModelB_b: max_g,1,1
+SQL vs Excel (LibreOffice),sesi PT-02_20260622_Shift1_ModelB_b: sd_g,1,1

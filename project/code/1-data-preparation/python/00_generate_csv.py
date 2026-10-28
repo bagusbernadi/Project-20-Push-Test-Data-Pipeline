@@ -2,16 +2,16 @@
 
 +-1.200 file, +-15.000 baris hasil ukur; 2 model x 2 kondisi (sebelum/sesudah oven) x 2 mesin x 2 shift, +-3 bulan.
 Hasil (data/sim/incoming/): CSV mesin (beberapa rusak, beda format angka, ganda, format mesin baru),
-data/sim/ground_truth.json (daftar file bermasalah dan pergeseran). Jalankan: python scripts/generate_csv.py (versi data: v1)
+data/sim/ground_truth.json (daftar file bermasalah dan pergeseran). Jalankan: python3 code/1-data-preparation/python/00_generate_csv.py dari folder project/ (versi data: v1)
 """
 import json
+import sys
 from datetime import date, timedelta
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import numpy as np
-
-ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "data" / "sim"
+from common import SIM as OUT
 SEED = 20260401
 DATA_VERSION = "v1"
 LSL, USL = 1500.0, 19000.0

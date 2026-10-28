@@ -1,0 +1,11 @@
+# Konfigurasi pipeline push test (Project 20). Alamat folder dan spesifikasi diatur di sini, bukan di kode.
+incoming_dir: data/sim/incoming        # folder CSV mesin (relatif terhadap project/)
+quarantine_dir: data/sim/quarantine    # file gagal disalin ke sini beserta alasan
+database: pushtest.duckdb
+spec:                                  # tabel spec: batas spesifikasi per model dan jenis uji (g)
+  - {model: Model A, test_type: push, lsl_g: 1500.0, usl_g: 19000.0}
+  - {model: Model B, test_type: push, lsl_g: 1500.0, usl_g: 19000.0}
+capacity_g: 20000.0                    # kapasitas mesin (DS20KG); nilai di atas ini tidak wajar (ASUMSI)
+min_rows: 1                            # minimal baris hasil ukur per file
+formats:                               # format mesin yang dikenali; format lain masuk karantina sampai aturannya ditambahkan
+  - machine_v1                         # titik koma, header 8 baris, kolom Sample No dan Force (g)

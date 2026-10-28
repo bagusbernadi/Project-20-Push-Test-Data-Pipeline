@@ -1,0 +1,6 @@
+fakta,rancangan,ukuran,nilai,nilai2,keterangan
+1,"satu kombinasi dibuat bervariasi besar sehingga Cpk < 1,33",Cpk terendah,1.950204223,0,"kombinasi di bawah 1,33"
+2,rata-rata satu mesin turun sekitar 800 g selama sekitar 1 minggu setelah kalibrasi,selisih rata-rata mesin PT-02 setelah titik ubah (g),-623.2886686,1,tanggal titik ubah sama dengan tanggal tertanam
+3,sekitar 3% file berformat titik ribuan dan koma desimal,persen file dengan format angka lain,0.03,36,file tertanam
+4,"file bermasalah: header berbeda, kolom hilang, file kosong, file ganda",jenis file bermasalah tertanam,56,14,file bermasalah tertanam (salinan)
+5,"2% sampai 3% nilai tidak wajar (0, negatif, di atas kapasitas)",hasil ukur tidak valid di data,0,0,baris tidak valid

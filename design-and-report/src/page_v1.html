@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project 20: Push Test Data Pipeline</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Rancangan project portofolio Data Analyst: pipeline data CSV mesin push test perekatan lensa lampu depan sepeda motor ke database SQL dan dashboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: tema terang ala Google (single theme, sengaja): latar putih keabuan, kartu putih;
+   biru = struktur, kuning = penanda utama, hijau = info pendukung, merah = aksen.
+   Skala huruf: H1 32 · H2 25 · H3 19 · body 16.5 · keterangan 14 · label 12.5 */
+:root{color-scheme:light;
+--bg:#F8F9FA;--card:#FFFFFF;--sub:#F1F3F4;--line:#DADCE0;
+--ink:#202124;--head:#174EA6;--mut:#5F6368;
+--navy:#1A73E8;--navy-ink:#FFFFFF;--teal:#188038;--amber:#FBBC04;--amber-ink:#3C2A00;--bar:#1A73E8;--soft:#E8F0FE;
+--gb:#4285F4;--gr:#EA4335;--gy:#FBBC04;--gg:#34A853;
+--navyH:#1A73E8;--amberH:#B06000;--tealH:#188038;--plumH:#9334E6;--roseH:#D93025;--skyH:#1967D2;--onph:#fff;
+--f:"Source Sans 3",Calibri,Carlito,"Segoe UI",Arial,sans-serif;
+--h1:clamp(26px,2.6vw,32px);--h2:clamp(21px,2vw,25px);--h3:19px;--body:16.5px;--small:14px;--label:12.5px}
+[hidden]{display:none!important}
+*{box-sizing:border-box}html{scroll-padding-top:64px;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--body)/1.6 var(--f)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+main{max-width:880px;margin:0 auto;padding-block:16px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+b,strong{font-weight:700}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);padding:8px 0;display:flex;gap:6px;overflow-x:auto}
+nav a{flex:none;background:var(--card);border:1px solid var(--line);color:var(--ink);text-decoration:none;border-radius:999px;padding:6px 14px;font-size:var(--small);font-weight:600}
+nav a:hover,nav a:focus-visible{background:var(--amber);border-color:var(--amber);color:var(--amber-ink);outline:none}
+.banner{background:var(--navy);color:var(--navy-ink);border-radius:18px;padding:22px 26px}
+.banner h1{margin:0 0 8px;font-size:var(--h1);font-weight:800;line-height:1.2;text-wrap:balance;letter-spacing:-.01em}.banner p{margin:0;font-size:18px;line-height:1.55;opacity:.97}.banner .goal b{font-weight:800}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.tags{align-items:center}.tlab{font-size:var(--small);font-weight:700;margin-right:4px;opacity:.95}
+.tag{border-radius:999px;padding:3px 12px;font-size:var(--label);font-weight:700;background:rgba(255,255,255,.2);letter-spacing:.02em}.tag.a{background:var(--amber);color:var(--amber-ink)}
+.card{border-radius:16px;padding:16px 20px;background:var(--card);border:1px solid var(--line);margin:12px 0}
+.card p{margin:8px 0}
+h2{font-size:var(--h2);font-weight:800;color:var(--head);margin:48px 0 10px;padding-bottom:8px;border-bottom:2px solid var(--line);line-height:1.25;text-wrap:balance}
+h2 small{display:block;font-size:var(--small);font-weight:400;color:var(--mut);margin-top:4px}
+h3{font-size:var(--h3);font-weight:700;color:var(--head);margin:16px 0 6px;line-height:1.3}
+.card h3:first-child,.card>div>h3:first-child{margin-top:4px}
+.add{display:inline-block;vertical-align:middle;margin-left:8px;border-radius:999px;padding:2px 10px;font-size:var(--label);font-weight:700;background:var(--teal);color:#fff}
+.how{background:var(--soft);border-radius:12px;padding:12px 16px;margin:10px 0;font-size:var(--small);line-height:1.55;color:var(--ink)}.how::before{content:"Cara membaca ";font-weight:700;color:var(--teal)}
+.callout{border-radius:14px;padding:14px 20px;margin:12px 0;font-size:16px}.callout h4{margin:0 0 6px;font-size:var(--h3);font-weight:700}.callout p{margin:6px 0}
+.callout.a{background:var(--amber);color:var(--amber-ink)}.callout.g{background:var(--teal);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}.kpis .card{margin:0}
+.kpi .v{font-size:30px;font-weight:800;display:block;line-height:1.15;color:var(--head);font-variant-numeric:tabular-nums}.kpi .l{display:block;font-weight:700;font-size:16px;margin-top:2px}.kpi .d{display:block;font-size:var(--small);line-height:1.4;margin-top:6px;color:var(--mut)}
+.kpi.t{background:var(--teal);border-color:var(--teal);color:#fff}.kpi.am{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.kpi.t .v,.kpi.t .d,.kpi.am .v,.kpi.am .d{color:inherit}
+table{border-collapse:collapse;width:100%;font-size:15px;background:var(--card);border-radius:12px;overflow:hidden}
+th{background:var(--navy);color:var(--navy-ink);padding:9px 12px;text-align:left;vertical-align:top;font-weight:700}
+td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:nth-child(odd) td{background:var(--sub)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:10px 0}
+.q{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:6px 0;display:grid;grid-template-columns:40px 1fr;gap:4px 8px;font-size:16px;line-height:1.45}
+.q .id{font-weight:800;color:var(--head)}.q .m{grid-column:2;font-size:var(--small);color:var(--mut)}
+.pri{display:inline-block;border-radius:999px;padding:1px 9px;font-size:var(--label);font-weight:700;margin-left:6px;background:var(--sub);border:1px solid var(--line);color:var(--mut)}.pri.M{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}.pri.S{background:var(--navy);border-color:var(--navy);color:#fff}
+.theme{font-size:var(--label);font-weight:700;color:var(--teal);margin:20px 0 4px;text-transform:uppercase;letter-spacing:.08em}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0}
+.flow span{border-radius:999px;padding:5px 12px;font-size:var(--small);font-weight:700;background:var(--sub);border:1px solid var(--line)}
+.flow span.ng{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}.flow span.ok{background:var(--teal);border-color:var(--teal);color:#fff}.flow i{font-style:normal;color:var(--mut);font-size:var(--small)}
+.row{display:flex;align-items:center;gap:8px;margin:6px 0;width:100%;font:inherit;font-size:var(--small);color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.row .n{width:96px;flex:none;font-weight:600}.row .tr{flex:1;background:var(--sub);border-radius:8px;height:24px;position:relative;overflow:hidden}
+.row .b{position:absolute;left:0;top:0;bottom:0;border-radius:8px;background:var(--bar);transition:width .25s}
+.row.sel .b{background:var(--amber)}.row.sel .n{color:var(--head);font-weight:800}
+.row .c{width:58px;text-align:right;flex:none;font-variant-numeric:tabular-nums;font-weight:600}
+.row:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:8px}
+.ctl{display:flex;align-items:center;gap:12px;margin:14px 0 10px;font-weight:700;font-size:15px}.ctl input{flex:1;accent-color:#F2A541}.ctl output{min-width:48px;text-align:right}
+.res{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}.res div{background:var(--sub);border-radius:12px;padding:10px 14px;font-size:var(--small);color:var(--mut)}.res b{display:block;font-size:24px;font-weight:800;color:var(--head);font-variant-numeric:tabular-nums}
+.steps{counter-reset:s;display:grid;gap:8px;margin:10px 0;padding:0;list-style:none}
+.steps li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px 12px 54px;position:relative}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:14px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;display:grid;place-items:center;font-size:14px}
+.steps li.L::before{background:var(--amber);color:var(--amber-ink)}
+.steps b.t{display:block;font-size:17px;color:var(--head);line-height:1.3}.steps p{margin:6px 0;font-size:15px;line-height:1.5}.steps .meta{font-size:13px;color:var(--mut)}
+.phase{font-size:var(--label);font-weight:700;color:var(--teal);margin:18px 0 0;text-transform:uppercase;letter-spacing:.08em}
+.tools{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:12px 0}.tools .card{margin:0}
+.tools b{display:block;font-size:var(--h3);color:var(--head)}.tools .r{font-size:15px;margin:6px 0 0}.tools .alt{font-size:var(--small);color:var(--mut);margin:8px 0 0;padding-top:8px;border-top:1px dashed var(--line)}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:8px 0}summary{cursor:pointer;font-weight:700;font-size:17px;color:var(--head)}details p{font-size:15.5px}
+.pill{border-radius:999px;padding:1px 9px;font-size:var(--label);font-weight:700;background:var(--teal);color:#fff;margin-left:4px}.pill.d{background:var(--sub);border:1px solid var(--line);color:var(--mut)}
+.chip{display:inline-block;border-radius:999px;padding:3px 11px;margin:3px 4px 3px 0;font-size:var(--small);font-weight:600;background:var(--sub);border:1px solid var(--line)}
+.tm{border-bottom:2px dotted var(--amber);background:rgba(242,165,65,.16);border-radius:4px;padding:0 2px;cursor:help}
+#tip{position:fixed;display:none;max-width:320px;white-space:pre-line;background:#202124;color:#fff;padding:10px 12px;border-radius:12px;font-size:var(--small);line-height:1.4;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+ul.tight{margin:6px 0;padding-left:20px}ul.tight li{margin:5px 0}
+.intro>.layout{grid-column:1/-1}
+.layout{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.layout .lead{margin:4px 0 10px;max-width:90ch}
+.figw{overflow-x:auto;margin:8px 0}.figw svg{display:block;width:100%;min-width:860px;height:auto;font-family:var(--f)}
+.figw .lane{fill:var(--sub)}.figw .box{fill:var(--card);stroke:var(--line);stroke-width:1.5}.figw .box.hi{stroke:var(--bar);stroke-width:2.5}
+.figw text{fill:var(--ink)}.figw .ln{font-size:15px;font-weight:700;fill:var(--head)}.figw .gl{font-size:13px;font-weight:700;fill:var(--teal);letter-spacing:.03em}
+.figw .bt{font-size:13px}.figw .b{font-size:15px;font-weight:700}.figw .st{font-size:13px;fill:var(--mut)}
+.figw .grp{stroke:var(--teal);stroke-width:2}.figw .ar{stroke:var(--bar);stroke-width:2}.figw .ah{fill:var(--bar)}
+.figw .ng,.figw .ngs{stroke:var(--amber);stroke-width:2;stroke-dasharray:5 4}.figw .aha{fill:var(--amber)}.figw .nl{font-size:14px;font-weight:700;fill:var(--amberH)}
+.figw .dt{stroke:var(--mut);stroke-width:2;stroke-dasharray:2 4}
+.figw .okb{fill:var(--teal)}.figw .scb{fill:var(--amber)}.figw .wt{fill:#fff;font-size:14px;font-weight:700}.figw .at{fill:var(--amber-ink);font-size:14px;font-weight:700}
+.figw .mk{fill:var(--amber)}.figw .mt{fill:var(--amber-ink);font-size:14px;font-weight:800}
+.legend{counter-reset:l;list-style:none;padding:0;margin:10px 0 0;display:grid;gap:10px}
+.legend li{counter-increment:l;position:relative;padding-left:38px;font-size:15.5px;line-height:1.55}
+.legend li::before{content:counter(l);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;background:var(--amber);color:var(--amber-ink);font-weight:800;font-size:14px;display:grid;place-items:center}
+@media (min-width:1000px){.legend{grid-template-columns:repeat(4,1fr);gap:16px}}
+.kpi{--h:var(--navyH);background:color-mix(in srgb,var(--h) 11%,var(--card));border-color:color-mix(in srgb,var(--h) 35%,var(--card))}
+.kpi .v{color:var(--h)}.kpi .l{color:var(--ink)}.kpi .d{color:var(--mut)}
+.q[data-p="M"]{background:color-mix(in srgb,var(--amber) 13%,var(--card));border-color:color-mix(in srgb,var(--amber) 60%,var(--card))}
+.q[data-p="S"]{background:color-mix(in srgb,var(--skyH) 9%,var(--card));border-color:color-mix(in srgb,var(--skyH) 35%,var(--card))}
+.q[data-p="N"]{border-style:dashed}
+.q[data-p="M"] .id{color:var(--amberH)}.q[data-p="S"] .id{color:var(--skyH)}.q[data-p="N"] .id{color:var(--mut)}
+.pri.S{background:var(--skyH);border-color:var(--skyH);color:var(--onph)}
+.fbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:12px 0 4px}.fbar span{font-size:var(--small);font-weight:700;color:var(--mut);margin-right:2px}
+.fb{font:inherit;font-size:var(--small);font-weight:700;cursor:pointer;border-radius:999px;padding:6px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.fb i{font-style:normal;opacity:.7;margin-left:4px}.fb:hover{border-color:var(--bar)}.fb:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.fb.on{background:var(--navy);border-color:var(--navy);color:#fff}.fb.on[data-f="M"]{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}.fb.on[data-f="S"]{background:var(--skyH);border-color:var(--skyH);color:var(--onph)}
+.defs p{margin:0 0 12px}.defs p:last-child{margin:0}
+.fx{display:inline-block;margin:2px 0;padding:1px 9px;border-radius:8px;background:color-mix(in srgb,var(--tealH) 12%,var(--card));border:1px solid color-mix(in srgb,var(--tealH) 40%,var(--card));color:var(--tealH);font-weight:700;font-size:15px;white-space:normal}
+.figw.fl svg{min-width:520px;max-width:1000px;margin:0 auto}.flowfull .card{padding:20px 24px}.flowfull .card>p{text-align:center;margin:12px 0 0}.figw .dia{fill:var(--sub);stroke:var(--bar);stroke-width:2}.figw .b2{font-size:14px;font-weight:700}
+.figw .arT{fill:none;stroke:var(--teal);stroke-width:2}.figw .aht{fill:var(--teal)}.figw .arA{fill:none;stroke:var(--amber);stroke-width:2}.figw .aha2{fill:var(--amber)}
+.figw .lt{font-size:13px;font-weight:700;fill:var(--tealH)}.figw .la{font-size:13px;font-weight:700;fill:var(--amberH)}
+.ph .phase{color:var(--ph);font-size:13.5px}
+.ph .steps li{background:color-mix(in srgb,var(--ph) 8%,var(--card));border-color:color-mix(in srgb,var(--ph) 32%,var(--card))}
+.ph .steps li::before,.ph .steps li.L::before{background:var(--ph);color:var(--onph)}
+.ph .steps b.t{color:var(--ink)}
+.steps li.L::after{content:"beban besar";position:absolute;right:12px;top:12px;font-size:11.5px;font-weight:700;letter-spacing:.03em;padding:1px 8px;border-radius:999px;border:1px solid var(--ph,var(--amber));color:var(--ph,var(--amber))}
+.steps li.L b.t{padding-right:84px}
+.banner{background:linear-gradient(120deg,#1A73E8,#4285F4)}
+h2{border-bottom:3px solid transparent;border-image:linear-gradient(90deg,var(--gb) 0 60px,var(--line) 60px) 1}
+nav a:nth-child(4n+1):hover{background:var(--gb);border-color:var(--gb);color:#fff}nav a:nth-child(4n+2):hover{background:var(--gr);border-color:var(--gr);color:#fff}nav a:nth-child(4n+4):hover{background:var(--gg);border-color:var(--gg);color:#fff}
+.callout.g{background:#E6F4EA;color:#0D652D;border:1px solid #A8DAB5}.callout.g h4{color:#137333}
+.callout.a{background:#FEF7E0;color:#3C2A00;border:1px solid #FDD663}
+.outs{display:grid;gap:12px;margin:12px 0}.outs .card{margin:0}
+.out{--h:var(--navyH);border-top:4px solid var(--h)}
+.out .oh{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.out .oh b{font-size:var(--h3);color:var(--h);line-height:1.3}
+.ob{flex:none;border-radius:999px;padding:1px 9px;font-size:var(--label);font-weight:700;background:var(--amber);color:var(--amber-ink)}.ob.opt{background:var(--sub);border:1px solid var(--line);color:var(--mut)}
+.out ul{margin:8px 0 0;padding-left:18px;font-size:15px;line-height:1.5}.out li{margin:4px 0}
+.out li:nth-last-child(-n+2){color:var(--mut);font-size:14px}
+@media (min-width:700px){.outs{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1280px){.outs{grid-template-columns:repeat(4,1fr)}}
+.tag.c1{background:#188038;color:#fff}.tag.c2{background:#9334E6;color:#fff}.tag.c3{background:#D93025;color:#fff}.tag.c4{background:#fff;color:#1A73E8}
+.sample td:first-child{white-space:nowrap}.src{border-top:1px dashed var(--line);padding-top:8px;font-size:15px}.src code{font-size:13.5px;background:var(--soft);padding:1px 6px;border-radius:6px}.note{font-size:13px;color:var(--mut);margin:6px 0 0}
+.wf{display:grid;gap:4px}
+.wl{--c:var(--navyH);position:relative;background:color-mix(in srgb,var(--c) 8%,var(--card));border:1px solid color-mix(in srgb,var(--c) 30%,var(--card));border-radius:14px;padding:10px 12px 12px}
+.wl h4{margin:0 0 10px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--c)}
+.ws{display:grid;gap:22px}
+.wb{position:relative;background:var(--card);border:2px solid var(--c);border-radius:12px;padding:10px 12px 10px 52px;min-height:62px}
+.wb .n{position:absolute;left:12px;top:12px;width:30px;height:30px;border-radius:50%;background:var(--c);color:var(--onph);font-weight:800;font-size:14px;display:grid;place-items:center}
+.wb b{display:block;font-size:15px;line-height:1.3}.wb .s{display:block;font-size:13px;color:var(--mut);margin-top:2px}
+.wb.L::before{content:"beban besar";position:absolute;top:-10px;right:10px;background:var(--amber);color:var(--amber-ink);font-size:11px;font-weight:700;padding:0 8px;border-radius:999px;line-height:18px}
+.wb:not(:last-child)::after{content:"↓";position:absolute;left:50%;bottom:-21px;transform:translateX(-50%);color:var(--c);font-weight:800;font-size:16px;line-height:1}
+.wa{text-align:center;font-weight:800;font-size:20px;color:var(--mut);line-height:1.2}
+.wrow,.wrow1{display:grid;gap:4px}
+.wrow>.wl:first-child{margin-bottom:24px}.wrow>.wl:first-child::after{content:"↓";position:absolute;left:50%;bottom:-24px;transform:translateX(-50%);font-weight:800;font-size:20px;color:var(--mut)}
+@media (min-width:1200px){
+.wrow{grid-template-columns:2fr 3fr;gap:30px}.wrow>.wl:first-child{margin-bottom:0}.wrow>.wl:first-child::after{content:"→";left:auto;right:-24px;bottom:auto;top:50%;transform:translateY(-50%)}
+.wrow1{grid-template-columns:2fr 3fr}
+.ws{grid-template-columns:repeat(var(--k),1fr);gap:26px}
+.wb:not(:last-child)::after{content:"→";left:auto;right:-25px;bottom:auto;top:50%;transform:translateY(-50%)}
+.wl{padding-left:8px;padding-right:8px}.ws{gap:34px}
+.wrow,.wrow1{gap:16px}.wrow>.wl:first-child::after{right:-14px;font-size:16px}
+}
+.docs code{font-size:13.5px;background:var(--soft);padding:1px 6px;border-radius:6px;white-space:nowrap}.docs td:nth-child(3){white-space:nowrap}
+/* layar lebar: nav jadi sidebar, konten dibagi kolom */
+.two{display:grid;gap:0 24px;align-items:start}.two>*{min-width:0}
+.qgrid{display:grid;gap:0 12px}.qgrid>*{min-width:0}
+@media (min-width:1000px){
+main{max-width:1480px}
+.two,.qgrid{grid-template-columns:1fr 1fr}.qgrid .theme{grid-column:1/-1}
+.kpis{grid-template-columns:repeat(6,1fr)}.tools{grid-template-columns:repeat(3,1fr)}
+.intro{display:grid;grid-template-columns:1fr 1fr;column-gap:28px;align-items:start}.intro h3{grid-column:1/-1}.intro>p{grid-column:1}.intro>.scroll{grid-column:2;grid-row:2/span 3;margin-top:8px}
+.phases{display:grid;grid-template-columns:repeat(2,1fr);gap:0 24px}.phases>*{min-width:0}
+}
+@media (min-width:1280px){
+main{display:grid;grid-template-columns:190px minmax(0,1fr);column-gap:32px}
+main>*{grid-column:2}
+main>nav{grid-column:1;grid-row:1/span 60;align-self:start;flex-direction:column;padding-top:16px}
+main>nav a{border-radius:10px;font-size:15px;padding:8px 14px}
+.phases{grid-template-columns:repeat(4,1fr)}
+}
+@media (max-width:620px){.kpis,.res{grid-template-columns:1fr 1fr}.tools{grid-template-columns:1fr}.row .n{width:78px}.banner{padding:18px}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.row .b{transition:none}}
+.row.sim{cursor:default}.row .gh{position:absolute;left:0;top:0;bottom:0;border-radius:8px;background:color-mix(in srgb,var(--mut) 28%,var(--card))}
+.row.sim .n{width:170px}.cxb{margin-top:0}@media (max-width:620px){.row.sim .n{width:110px;font-size:13px}}
+.chart svg{display:block;width:100%;height:auto;font-family:var(--f)}.chart .ax{stroke:var(--line)}.chart .tx{font-size:12px;fill:var(--mut)}
+.chart .ln2{fill:none;stroke:var(--bar);stroke-width:2}.chart .th{stroke:var(--amberH);stroke-width:2;stroke-dasharray:6 4}.chart .hb{fill:var(--bar)}.chart .sp{stroke:var(--roseH);stroke-width:2;stroke-dasharray:4 4}
+.chart .dot{fill:var(--roseH)}.chart .inc{fill:color-mix(in srgb,var(--tealH) 14%,var(--card))}.chart .bl{stroke:var(--amberH);stroke-width:2;stroke-dasharray:6 4}
+.row .gh2{position:absolute;left:0;top:0;bottom:0;border-right:3px solid var(--amberH);background:rgba(255,255,255,.35);border-radius:8px 0 0 8px}
+@media (min-width:1200px){.wa{display:grid;grid-template-columns:repeat(5,1fr);gap:34px;padding:0 9px}.wa.r span{grid-column:5}.wa.l span{grid-column:1}
+.ws.rev{direction:rtl}.ws.rev .wb{direction:ltr}.ws.rev .wb:not(:last-child)::after{content:"←";right:auto;left:-25px}}
+.figw .dt2{fill:none;stroke:var(--mut);stroke-width:2;stroke-dasharray:2 4}
+.tab{flex:none;font:inherit;font-size:15px;font-weight:800;cursor:pointer;background:var(--card);border:2px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 16px}
+.tab[data-t=design]{--c:var(--navy)}.tab[data-t=report]{--c:var(--teal)}
+.tab:hover{border-color:var(--c)}.tab.on{background:var(--c);border-color:var(--c);color:#fff}.tab:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.links{display:contents}.links[data-tab=design]{--ac:var(--navy)}.links[data-tab=report]{--ac:var(--teal)}
+.links a{font-size:13.5px;font-weight:600;color:var(--mut);padding:5px 12px}
+.pane code{font-size:.92em;background:var(--sub);border-radius:4px;padding:1px 5px;overflow-wrap:anywhere}
+.pane pre{background:var(--sub);border:1px solid var(--line);border-radius:12px;padding:12px 16px;overflow-x:auto;font-size:14px;line-height:1.5}.pane pre code{background:none;padding:0;overflow-wrap:normal}
+.pill.p{background:var(--amber);color:var(--amber-ink)}
+.callout a{color:inherit;font-weight:700;text-decoration:underline}
+@media (min-width:1280px){
+main>nav{gap:8px}
+.tab{border-radius:12px;font-size:16px;padding:12px 16px;text-align:left;border-left:8px solid var(--c)}
+.links{display:flex;flex-direction:column;gap:2px;margin:0 0 8px 12px;padding-left:12px;border-left:3px solid var(--ac)}
+main>nav .links a{background:none;border:0;border-radius:8px;font-size:14.5px;font-weight:600;color:var(--mut);padding:6px 10px}
+main>nav .links a:hover,main>nav .links a:focus-visible{background:var(--soft);color:var(--head)}
+}
+</style>
+
+</head><body>
+<a href="https://bagusbernadi.github.io/" style="display:inline-block;margin:12px 16px;font:600 14px/1.4 'Source Sans 3',Arial,sans-serif;color:#1A73E8;text-decoration:none">← All projects / Semua project</a>
+<main>
+<nav aria-label="Project navigation"><button type="button" class="tab on" data-t="design" aria-expanded="true" aria-controls="design">Design Project</button><div class="links" data-tab="design"><a href="#s1">Background</a><a href="#s2">Business Questions</a><a href="#s3">Ingestion &amp; Cpk</a><a href="#s4">Dataset</a><a href="#s5">Tools</a><a href="#s6">Work Plan</a><a href="#s7">Project Outputs</a><a href="#s8">Success Criteria</a><a href="#s9">Assumptions &amp; Limitations</a></div><button type="button" class="tab" data-t="report" aria-expanded="false" aria-controls="report">Report Project</button><div class="links" data-tab="report" hidden><a href="#rp1">Problem</a><a href="#rp2">Data</a><a href="#rp3">Analysis</a><a href="#rp4">Recommendation</a><a href="#rp5">Impact</a><a href="#rp6">Batasan</a></div></nav>
+<header class="banner"><h1>Project 20: Push Test Data Pipeline + Dashboard</h1>
+<p class="goal"><b>Tujuan project:</b> membangun pipeline yang membaca file CSV mesin push test secara otomatis, membersihkan angkanya, dan menyimpannya di database, sehingga Max, Min, rata-rata, dan Cpk kekuatan rekat per model dan kondisi proses bisa dipantau di dashboard tanpa macro VBA dan copy-paste manual.</p>
+<div class="tags"><span class="tlab">Kategori:</span><span class="tag a">Rancangan project</span><span class="tag c1">Perakitan sepeda motor</span><span class="tag c2">Data simulasi</span><span class="tag c3">Python + SQL pipeline</span></div></header>
+<div class="pane" id="design" data-tab="design">
+<section class="card intro">
+<h3>Project Introduction</h3>
+<p>Bayangkan sekolah yang memakai mesin pemindai lembar jawaban. Setiap kelas menghasilkan satu file nilai. Guru lalu menyalin file-file itu satu per satu ke buku nilai dengan bantuan macro, dan kadang nilai 8.245,6 terbaca 8,2456 karena tanda titik dan koma tertukar. Rapor jadi salah, dan tidak ada yang sadar sampai orang tua protes.</p>
+<p>Sekolah butuh cara agar setiap file nilai baru langsung terbaca dengan benar, tersimpan di satu tempat, dan rapor bisa dilihat kapan saja tanpa menyalin manual.</p>
+<div class="scroll"><table><tr><th>Di sekolah</th><th>Di perakitan sepeda motor</th></tr><tr><td>Mesin pemindai lembar jawaban</td><td>Mesin push test yang mengukur gaya untuk melepas lensa lampu depan dari rumahnya</td></tr><tr><td>Satu file nilai per kelas</td><td>Satu file CSV per sesi uji (per model, kondisi, shift)</td></tr><tr><td>Guru menyalin dengan macro</td><td>Macro VBA dan copy-paste ke workbook Excel</td></tr><tr><td>Nilai 8.245,6 terbaca 8,2456</td><td>Pemisah ribuan dan desimal salah dibaca, misalnya 8.245,6 g menjadi 8,2 g</td></tr><tr><td>Rapor otomatis</td><td>Database dan dashboard Max/Min/rata-rata/Cpk</td></tr></table></div>
+<p>Project ini membangun <b>pipeline data</b>: file CSV dari mesin push test dibaca otomatis, divalidasi, disimpan di database, lalu ditampilkan di dashboard per model dan kondisi proses. Datanya adalah data simulasi karena data pabrik bersifat rahasia. Kata bergaris bawah putus-putus kuning bisa diklik untuk melihat artinya.</p>
+<div class="layout">
+<h3>Gambaran alur kerja di lini perakitan lampu depan sepeda motor</h3>
+<p class="lead">Lini produksi bisa dibayangkan sebagai tiga jalur yang berjalan bersamaan. Dua jalur pertama sudah ada di pabrik. Jalur ketiga adalah yang dibangun di project ini.</p>
+<div class="figw"><svg viewBox="0 0 1240 432" role="img" aria-label="Alur kerja: jalur perakitan lampu depan sepeda motor, jalur push test yang menghasilkan file CSV dan disalin manual, dan jalur data otomatis menuju database dan dashboard"><defs><marker id="mN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="mA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="aha" d="M0 0L10 5L0 10z"/></marker></defs><rect class="lane" x="0" y="8" width="1240" height="130" rx="14"/><rect class="lane" x="0" y="150" width="1240" height="140" rx="14"/><rect class="lane" x="0" y="302" width="1240" height="128" rx="14"/><text class="ln" x="18" y="78">Jalur</text><text class="ln" x="18" y="96">produksi</text><text class="ln" x="18" y="218">Jalur</text><text class="ln" x="18" y="236">push test</text><text class="ln" x="18" y="362">Jalur</text><text class="ln" x="18" y="380">data</text><line class="grp" x1="150" x2="1030" y1="40" y2="40"/><text class="gl" x="590" y="32" text-anchor="middle">Lini perakitan lampu depan sepeda motor</text><rect class="box" x="150" y="52" width="130" height="60" rx="10"/><text class="bt" x="215.0" y="78" text-anchor="middle">Housing</text><text class="bt" x="215.0" y="94" text-anchor="middle">Molding</text><line class="ar" x1="280" x2="296" y1="82" y2="82" marker-end="url(#mN)"/><rect class="box" x="300" y="52" width="130" height="60" rx="10"/><text class="bt" x="365.0" y="78" text-anchor="middle">Glue</text><text class="bt" x="365.0" y="94" text-anchor="middle">Dispensing</text><line class="ar" x1="430" x2="446" y1="82" y2="82" marker-end="url(#mN)"/><rect class="box" x="450" y="52" width="130" height="60" rx="10"/><text class="bt" x="515.0" y="78" text-anchor="middle">Lens</text><text class="bt" x="515.0" y="94" text-anchor="middle">Bonding</text><line class="ar" x1="580" x2="596" y1="82" y2="82" marker-end="url(#mN)"/><rect class="box" x="600" y="52" width="130" height="60" rx="10"/><text class="bt" x="665.0" y="78" text-anchor="middle">Oven</text><text class="bt" x="665.0" y="94" text-anchor="middle">Curing</text><line class="ar" x1="730" x2="746" y1="82" y2="82" marker-end="url(#mN)"/><rect class="box" x="750" y="52" width="130" height="60" rx="10"/><text class="bt" x="815.0" y="78" text-anchor="middle">Final</text><text class="bt" x="815.0" y="94" text-anchor="middle">Inspection</text><line class="ar" x1="880" x2="896" y1="82" y2="82" marker-end="url(#mN)"/><rect class="box" x="900" y="52" width="130" height="60" rx="10"/><text class="bt" x="965.0" y="87" text-anchor="middle">Packaging</text><line class="ar" x1="1030" x2="1066" y1="82" y2="82" marker-end="url(#mN)"/><text class="bt" x="1072" y="87">Lini motor</text><line class="dt" x1="665.0" x2="665.0" y1="114" y2="198" marker-end="url(#mN)"/><text class="st" x="675.0" y="160">sampel sebelum dan sesudah oven</text><rect class="box" x="575.0" y="202" width="180" height="56" rx="10"/><text class="bt b" x="665.0" y="225" text-anchor="middle">Mesin push test</text><text class="st" x="665.0" y="245" text-anchor="middle">sampel per shift</text><line class="ar" x1="755.0" x2="797.0" y1="230" y2="230" marker-end="url(#mN)"/><rect class="box" x="801.0" y="202" width="180" height="56" rx="10"/><text class="bt b" x="891.0" y="225" text-anchor="middle">File CSV per sesi</text><text class="st" x="891.0" y="245" text-anchor="middle">titik ribuan, koma desimal</text><line class="ar" x1="981.0" x2="1023.0" y1="230" y2="230" marker-end="url(#mN)"/><rect class="box" x="1027.0" y="202" width="180" height="56" rx="10"/><text class="bt b" x="1117.0" y="225" text-anchor="middle">Macro VBA</text><text class="st" x="1117.0" y="245" text-anchor="middle">copy-paste manual</text><rect class="box" x="150" y="336" width="210" height="62" rx="10"/><text class="bt b" x="255.0" y="362" text-anchor="middle">File CSV baru</text><text class="st" x="255.0" y="382" text-anchor="middle">folder mesin</text><line class="ar" x1="360" x2="411" y1="367" y2="367" marker-end="url(#mN)"/><rect class="box hi" x="415" y="336" width="210" height="62" rx="10"/><text class="bt b" x="520.0" y="362" text-anchor="middle">Parser + validasi</text><text class="st" x="520.0" y="382" text-anchor="middle">Python</text><line class="ar" x1="625" x2="676" y1="367" y2="367" marker-end="url(#mN)"/><rect class="box hi" x="680" y="336" width="210" height="62" rx="10"/><text class="bt b" x="785.0" y="362" text-anchor="middle">Database</text><text class="st" x="785.0" y="382" text-anchor="middle">DuckDB + SQL</text><line class="ar" x1="890" x2="941" y1="367" y2="367" marker-end="url(#mN)"/><rect class="box hi" x="945" y="336" width="210" height="62" rx="10"/><text class="bt b" x="1050.0" y="362" text-anchor="middle">Dashboard</text><text class="st" x="1050.0" y="382" text-anchor="middle">Streamlit</text><polyline class="dt2" points="1117.0,258 1117.0,296 255.0,296 255.0,332" marker-end="url(#mN)"/><text class="st" x="686" y="290" text-anchor="middle">hari ini: disalin manual ke Excel</text><text class="gl" x="785" y="422" text-anchor="middle">Bagian yang dibangun di project ini</text><line class="grp" x1="415" x2="1155" y1="404" y2="404"/><circle class="mk" cx="130" cy="58" r="13"/><text class="mt" x="130" y="63" text-anchor="middle">1</text><circle class="mk" cx="635.0" cy="140" r="13"/><text class="mt" x="635.0" y="145" text-anchor="middle">2</text><circle class="mk" cx="565.0" cy="202" r="13"/><text class="mt" x="565.0" y="207" text-anchor="middle">3</text><circle class="mk" cx="130" cy="342" r="13"/><text class="mt" x="130" y="347" text-anchor="middle">4</text></svg></div>
+<ol class="legend"><li><b>Jalur produksi.</b> Rumah lampu dicetak, lem diaplikasikan, lensa ditempel, lalu lem dikeringkan di oven sebelum lampu diperiksa dan dikirim ke lini perakitan motor.</li><li><b>Sampel diambil.</b> Beberapa unit per shift diambil sebelum dan sesudah oven untuk diuji kekuatan rekatnya, seperti lembar jawaban yang dipindai.</li><li><b>Jalur push test.</b> Mesin menekan lensa sampai lepas dan mencatat gayanya dalam satu file CSV per sesi. Saat ini file disalin ke Excel dengan macro VBA dan copy-paste, rawan salah baca angka dan file terlewat.</li><li><b>Jalur data.</b> File baru dibaca otomatis, divalidasi, disimpan di database, lalu ditampilkan di dashboard. Engineer cukup membuka link untuk melihat Cpk terbaru.</li></ol>
+</div>
+</section>
+<div class="kpis"><div class="card kpi" style="--h:var(--navyH)"><span class="v">12</span><span class="l">pertanyaan analisis</span><span class="d">Hal yang ingin dijawab dari data, 8 di antaranya prioritas utama (bagian 2).</span></div><div class="card kpi" style="--h:var(--amberH)"><span class="v">5</span><span class="l">ukuran kinerja (KPI)</span><span class="d">Parse success rate, Cpk, out-of-spec rate, pergeseran rata-rata, dan menit manual per file (bagian 3).</span></div><div class="card kpi" style="--h:var(--tealH)"><span class="v">12</span><span class="l">langkah pengerjaan</span><span class="d">Dari memetakan proses lama sampai dashboard siap ditinjau (bagian 6).</span></div><div class="card kpi" style="--h:var(--plumH)"><span class="v">2 × 2</span><span class="l">model × kondisi</span><span class="d">Model A dan B, diuji sebelum dan sesudah oven.</span></div><div class="card kpi" style="--h:var(--roseH)"><span class="v">±3 bulan</span><span class="l">periode data</span><span class="d">Sekitar 75 hari kerja, cukup untuk melihat tren mingguan dan efek kalibrasi.</span></div><div class="card kpi" style="--h:var(--skyH)"><span class="v">4</span><span class="l">tabel data</span><span class="d">Sesi uji, hasil ukur, spesifikasi, dan log pemuatan file (bagian 4).</span></div></div>
+<h2 id="s1">1. Background<small>Kenapa tema ini dipilih</small></h2>
+<div class="card two">
+<div><h3>Latar belakang masalah</h3>
+<p>Di banyak pabrik, mesin uji menyimpan hasilnya sebagai file CSV per sesi. Data lalu dipindahkan ke Excel memakai macro VBA dengan alamat folder yang ditulis langsung di kode, ditambah copy-paste manual. Akibatnya:</p>
+<ul class="tight"><li>Setiap file butuh beberapa menit untuk dipindahkan, dan pekerjaan menumpuk saat volume uji tinggi.</li><li>Angka dengan titik ribuan dan koma desimal bisa salah dibaca (8.245,6 g menjadi 8,2 g), sehingga rata-rata dan Cpk terlihat jauh lebih buruk dari kenyataan.</li><li>Macro berhenti jika nama folder atau format kolom mesin berubah, dan file bisa terlewat atau masuk dua kali tanpa ketahuan.</li><li>Cpk baru dihitung saat laporan dibuat, sehingga pergeseran proses terlambat diketahui.</li></ul></div>
+<div><h3>Alasan memilih tema ini sebagai portofolio</h3>
+<ul class="tight"><li><b>Dekat dengan pekerjaan sehari-hari.</b> Mengolah data mesin uji dan mengganti macro VBA adalah masalah nyata yang pernah ditangani, sehingga bisa diceritakan dengan detail saat wawancara.</li><li><b>Menunjukkan skill data engineering ringan untuk Data Analyst.</b> Parsing file berantakan, validasi, skema database, SQL, dan dashboard yang ter-update otomatis.</li><li><b>Tingkat kesulitan menengah.</b> Analisisnya deskriptif dan Cpk, tetapi pipeline harus tahan terhadap file rusak dan duplikat.</li><li><b>Menjadi sumber data project lain.</b> Database hasil pipeline bisa dipakai Project 12 (Process Comparison Analysis) dan Project 15 (SPC Control Chart &amp; Capability Dashboard with Automated Alerts), yang juga memakai data push test.</li></ul></div>
+</div>
+<h2 id="s2">2. Business Questions<small>Satu pertanyaan utama, dipecah menjadi pertanyaan yang lebih kecil</small></h2>
+<div class="callout a"><h4>Pertanyaan utama</h4>Bagaimana mengganti macro VBA dan copy-paste manual agar data CSV mesin push test otomatis masuk database, terbaca dengan benar, dan siap dianalisis per model dan kondisi proses?</div>
+<p class="how">Pertanyaan utama terlalu besar untuk dijawab sekaligus, jadi dipecah per tema. Label "Utama" berarti wajib dijawab dan dikerjakan lebih dulu. "Pendukung" memperdalam hasil. "Tambahan" dikerjakan jika waktu tersisa. Teks abu-abu di bawah tiap pertanyaan adalah cara menjawabnya.</p>
+<div class="fbar" role="group" aria-label="Filter pertanyaan"><span>Tampilkan:</span><button type="button" class="fb on" data-f="*">Semua <i>12</i></button><button type="button" class="fb" data-f="M">Utama <i>8</i></button><button type="button" class="fb" data-f="S">Pendukung <i>3</i></button><button type="button" class="fb" data-f="N">Tambahan <i>1</i></button></div>
+<div class="qgrid" id="qg">
+<p class="theme">Pipeline: apakah data masuk dengan benar</p>
+<div class="q" data-p="M"><span class="id">Q1</span><span>Berapa persen file CSV yang berhasil dibaca otomatis, dan apa penyebab file yang gagal?<span class="pri M">Utama</span></span><span class="m">Parse success rate, log error per jenis</span></div>
+<div class="q" data-p="M"><span class="id">Q2</span><span>Berapa banyak nilai yang berubah karena salah baca pemisah ribuan dan desimal di proses lama?<span class="pri M">Utama</span></span><span class="m">Bandingkan hasil macro vs parser</span></div>
+<div class="q" data-p="M"><span class="id">Q3</span><span>Apakah Max, Min, rata-rata, dan Cpk hasil hitung ulang sama dengan angka di workbook lama?<span class="pri M">Utama</span></span><span class="m">Rekonsiliasi per sesi uji</span></div>
+<p class="theme">Kualitas proses: seberapa kuat dan stabil rekatnya</p>
+<div class="q" data-p="M"><span class="id">Q4</span><span>Berapa Cpk kekuatan rekat per model dan kondisi (sebelum dan sesudah oven), dan mana yang di bawah 1,33?<span class="pri M">Utama</span></span><span class="m">Cpk per kelompok, peringkat</span></div>
+<div class="q" data-p="M"><span class="id">Q5</span><span>Berapa persen hasil ukur di luar spesifikasi per model dan kondisi?<span class="pri M">Utama</span></span><span class="m">Out-of-spec rate</span></div>
+<div class="q" data-p="S"><span class="id">Q6</span><span>Apakah hasil berbeda antar shift atau antar mesin uji?<span class="pri S">Pendukung</span></span><span class="m">Boxplot, perbandingan median</span></div>
+<p class="theme">Tren: perubahan dari waktu ke waktu</p>
+<div class="q" data-p="M"><span class="id">Q7</span><span>Bagaimana tren rata-rata kekuatan rekat dan Cpk per minggu, dan adakah pergeseran?<span class="pri M">Utama</span></span><span class="m">Tren mingguan, rata-rata bergerak</span></div>
+<div class="q" data-p="S"><span class="id">Q8</span><span>Apakah pergeseran terjadi setelah kalibrasi mesin atau penggantian lot lem?<span class="pri S">Pendukung</span></span><span class="m">Tren dengan penanda kejadian</span></div>
+<p class="theme">Efisiensi: waktu yang dihemat</p>
+<div class="q" data-p="M"><span class="id">Q9</span><span>Berapa menit kerja manual per file yang digantikan pipeline?<span class="pri M">Utama</span></span><span class="m">Waktu proses lama vs otomatis</span></div>
+<div class="q" data-p="N"><span class="id">Q10</span><span>Berapa jam kerja per tahun yang bisa dihemat?<span class="pri">Tambahan</span></span><span class="m">Menit per file × jumlah file per tahun ÷ 60</span></div>
+<p class="theme">Validitas: apakah pipeline bisa dipercaya</p>
+<div class="q" data-p="M"><span class="id">Q11</span><span>Apakah pipeline menangkap semua file rusak dan nilai aneh yang sengaja ditanam?<span class="pri M">Utama</span></span><span class="m">Cocokkan dengan ground truth</span></div>
+<div class="q" data-p="S"><span class="id">Q12</span><span>Apakah file yang sama tidak pernah masuk dua kali walaupun pipeline dijalankan ulang?<span class="pri S">Pendukung</span></span><span class="m">Cek hash file, uji idempoten</span></div>
+</div>
+<h2 id="s3">3. Ingestion &amp; Cpk<span class="add">Komponen tambahan</span><small>Bagaimana setiap file baru disaring sebelum masuk database, dan kenapa satu kesalahan baca bisa merusak Cpk</small></h2>
+<p class="how">Setiap file melewati tiga saringan sebelum datanya dipakai. Arahkan kursor atau klik kata yang diberi garis bawah kuning untuk melihat pengertian dan rumusnya.</p>
+<div class="flowfull"><h3>Alur file CSV baru</h3>
+<div class="card"><div class="figw fl"><svg viewBox="0 0 986 245" role="img" aria-label="Diagram percabangan: file CSV baru dicek apakah sudah pernah dimuat, apakah formatnya dikenali, dan apakah nilainya wajar; jika lolos semua, data masuk database dan dashboard"><defs><marker id="fN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="fT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="aht" d="M0 0L10 5L0 10z"/></marker><marker id="fA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="aha2" d="M0 0L10 5L0 10z"/></marker></defs><rect class="box" x="8" y="40" width="112" height="50" rx="10"/><text class="b2" x="64" y="62" text-anchor="middle">File CSV</text><text class="b2" x="64" y="78" text-anchor="middle">baru</text><line class="ar" x1="120" x2="148" y1="65" y2="65" marker-end="url(#fN)"/><polygon class="dia" points="150,65 212,25 274,65 212,105"/><text class="b2" x="212" y="70" text-anchor="middle">File baru?</text><line class="arT" x1="274" x2="310" y1="65" y2="65" marker-end="url(#fT)"/><text class="lt" x="280" y="56">Ya</text><line class="arA" x1="212" x2="212" y1="105" y2="171" marker-end="url(#fA)"/><text class="la" x="220" y="145">Tidak</text><rect class="scb" x="137.0" y="175" width="150" height="56" rx="14"/><text class="at" x="212" y="198" text-anchor="middle">Dilewati:</text><text class="at" x="212" y="218" text-anchor="middle">duplikat</text><polygon class="dia" points="314,65 398,25 482,65 398,105"/><text class="b2" x="398" y="70" text-anchor="middle">Format dikenali?</text><line class="arT" x1="482" x2="518" y1="65" y2="65" marker-end="url(#fT)"/><text class="lt" x="488" y="56">Ya</text><line class="arA" x1="398" x2="398" y1="105" y2="171" marker-end="url(#fA)"/><text class="la" x="406" y="145">Tidak</text><rect class="scb" x="323.0" y="175" width="150" height="56" rx="14"/><text class="at" x="398" y="198" text-anchor="middle">Karantina +</text><text class="at" x="398" y="218" text-anchor="middle">log error</text><polygon class="dia" points="522,65 589,25 656,65 589,105"/><text class="b2" x="589" y="70" text-anchor="middle">Nilai wajar?</text><line class="arT" x1="656" x2="692" y1="65" y2="65" marker-end="url(#fT)"/><text class="lt" x="662" y="56">Ya</text><line class="arA" x1="589" x2="589" y1="105" y2="171" marker-end="url(#fA)"/><text class="la" x="597" y="145">Tidak</text><rect class="scb" x="514.0" y="175" width="150" height="56" rx="14"/><text class="at" x="589" y="198" text-anchor="middle">Ditandai,</text><text class="at" x="589" y="218" text-anchor="middle">cek manual</text><rect class="okb" x="696" y="45" width="130" height="40" rx="20"/><text class="wt" x="761" y="70" text-anchor="middle">Database</text><line class="ar" x1="826" x2="852" y1="65" y2="65" marker-end="url(#fN)"/><rect class="box" x="856" y="40" width="122" height="50" rx="10"/><text class="b2" x="917" y="70" text-anchor="middle">Dashboard</text></svg></div>
+<p>File yang gagal tidak dibuang. File dipindah ke folder karantina dan alasannya dicatat, sehingga bisa diperbaiki lalu dimuat ulang.</p></div></div>
+<h3>Kenapa satu kesalahan baca angka bisa merusak Cpk</h3>
+<p class="how">Grafik menunjukkan sebaran 300 hasil ukur kekuatan rekat (angka contoh, bukan hasil dari data) dengan batas spesifikasi 1.500–19.000 g. Geser slider untuk menambah persentase baris yang pemisah ribuan dan desimalnya salah dibaca, misalnya 8.245,6 g menjadi 8,2 g. Nilai yang salah baca menumpuk di dekat 0 g, di bawah LSL.</p>
+<div class="card"><div class="chart" id="hist"></div>
+<div class="ctl"><label for="sl">Baris yang salah baca</label><input id="sl" type="range" min="0" max="5" step="0.5" value="1"><output id="slo" for="sl">1%</output></div>
+<div class="res"><div>Rata-rata terbaca<b id="r1"></b></div><div>Cpk terbaca<b id="r2"></b></div><div>Cpk sebenarnya<b id="r3"></b></div></div>
+<p id="ins" style="margin:12px 0 0;font-size:15.5px"></p></div>
+<h2 id="s4">4. Dataset<small>Data simulasi buatan sendiri yang meniru file CSV mesin push test</small></h2>
+<div class="two"><div class="card">
+<p><b>Kenapa data simulasi?</b> Data pabrik bersifat rahasia. Program Python membuat ribuan file CSV yang meniru keluaran mesin push test: header mesin, pemisah titik koma, titik ribuan dan koma desimal, serta beberapa file rusak. Karena kita tahu apa yang ditanam, kita bisa memeriksa apakah pipeline menangkapnya.</p>
+<p><b>Ukuran:</b> 2 model (A dan B), 2 kondisi (sebelum dan sesudah oven), 2 mesin uji, 2 shift, sekitar 75 hari kerja. Perkiraan ±1.200 file CSV dengan 5–20 hasil ukur per file, atau ±15.000 baris hasil ukur. Jumlah pastinya baru diketahui setelah data dibuat.</p>
+<p class="src"><b>Sumber data:</b> data simulasi buatan sendiri, dibuat oleh skrip <code>scripts/generate_csv.py</code> di repositori project (Versi: v1, rancangan; Tanggal dibuat: saat Tahap B dikerjakan). Tidak memakai dataset publik atau data perusahaan.</p>
+</div>
+<div class="callout g"><h4>Fakta yang sengaja ditanam (ground truth)</h4>
+<p>1. Satu kombinasi (usulan: Model B sebelum oven) dibuat bervariasi besar sehingga Cpk di bawah 1,33.</p><p>2. Rata-rata satu mesin uji bergeser turun ±800 g selama ±1 minggu setelah kalibrasi yang salah.</p><p>3. Sekitar 3% file memakai titik ribuan dan koma desimal, format yang membuat macro lama salah baca.</p><p>4. File bermasalah: header berbeda, kolom hilang, file kosong, dan file yang sama tersalin dua kali.</p><p>5. Sekitar 2–3% nilai tidak wajar (0, negatif, atau di atas kapasitas mesin) disisipkan.</p></div></div>
+<h3>Empat tabel yang akan dibuat</h3>
+<p class="how">Data disimpan dalam beberapa tabel yang saling terhubung lewat kolom yang sama (misalnya run_id). Satu file CSV menjadi satu baris di test_run dan beberapa baris di measurement.</p>
+<div class="scroll"><table>
+<tr><th>Tabel</th><th>Isi (1 baris = …)</th><th>Kolom utama</th></tr><tr><td><b>test_run</b></td><td>Satu file CSV atau satu sesi uji</td><td>run_id, file_name, file_hash, machine_id, model, condition (before / after oven), test_type (push / shear), shift, test_datetime</td></tr><tr><td><b>measurement</b></td><td>Satu hasil ukur</td><td>run_id, seq, force_g, judgement (OK / NG)</td></tr><tr><td><b>spec</b></td><td>Batas spesifikasi per model dan jenis uji (tabel referensi)</td><td>model, test_type, lsl_g, usl_g</td></tr><tr><td><b>ingest_log</b></td><td>Satu percobaan memuat file</td><td>file_name, status (loaded / skipped / quarantined), error_type, rows_read, loaded_at</td></tr></table></div>
+<div class="two"><div><h3>Contoh isi tabel measurement</h3>
+<div class="scroll"><table class="sample"><tr><th>run_id</th><th>seq</th><th>force_g</th><th>judgement</th></tr><tr><td>R0412</td><td>1</td><td>8.245,6</td><td>OK</td></tr><tr><td>R0412</td><td>2</td><td>9.110,2</td><td>OK</td></tr><tr><td>R0413</td><td>1</td><td>8,2</td><td>NG</td></tr></table></div>
+<p class="note">Angka karangan, bukan data asli. Baris ketiga contoh salah baca: 8.245,6 g tersimpan sebagai 8,2 g sehingga dinilai NG.</p></div>
+<div class="card"><p style="margin:0 0 6px"><b>Model, kondisi, dan jenis uji</b>:</p>
+<span class="chip">Model A</span><span class="chip">Model B</span><span class="chip">Sebelum oven</span><span class="chip">Sesudah oven</span><span class="chip">Push test</span><span class="chip">Shear test</span>
+<p style="margin:10px 0 4px"><b>Contoh spesifikasi</b> (usulan awal, sama dengan Project 15): kekuatan rekat 1.500–19.000 g. Nilai spesifikasi disimpan di tabel spec agar mudah diubah tanpa mengubah kode.</p></div></div>
+<h2 id="s5">5. Tools<small>Alat yang dipakai dan alasannya</small></h2>
+<div class="tools"><div class="card"><b>Python (pandas)</b><p class="r">Parser file CSV: mengenali pemisah kolom, ribuan, dan desimal, membaca header mesin, memvalidasi kolom, lalu memindahkan file gagal ke karantina.</p><p class="alt">Menggantikan macro VBA. Alamat folder disimpan di file konfigurasi, tidak ditulis langsung di kode.</p></div><div class="card"><b>DuckDB + SQL</b><p class="r">Database untuk test_run, measurement, spec, dan ingest_log. Max, Min, rata-rata, dan Cpk dihitung lewat view SQL.</p><p class="alt">Gratis dan cukup satu file. Daftar portofolio menulis SQLite/PostgreSQL; DuckDB dipilih agar konsisten dengan project lain.</p></div><div class="card"><b>Streamlit + Plotly</b><p class="r">Dashboard per model, kondisi, mesin, dan shift: tren rata-rata, Cpk, histogram terhadap spesifikasi, dan status file terakhir.</p><p class="alt">Bisa dipublikasikan gratis lewat link. Power BI butuh akun work/school untuk publish.</p></div><div class="card"><b>pytest</b><p class="r">Tes otomatis untuk parser: file normal, titik ribuan dan koma desimal, header berbeda, file kosong, file duplikat.</p><p class="alt">Membuktikan pipeline tidak rusak saat kode diubah.</p></div><div class="card"><b>Excel</b><p class="r">Cek silang: membandingkan hasil pipeline dengan workbook lama pada sampel sesi uji (Q3).</p><p class="alt">Format laporan lama tetap bisa diverifikasi rekan kerja.</p></div><div class="card"><b>GitHub + Markdown</b><p class="r">Menyimpan kode, contoh file CSV, dan README. GitHub Actions bisa menjalankan tes setiap ada perubahan.</p><p class="alt">Standar industri untuk portofolio dan riwayat perubahan kode.</p></div></div>
+<h2 id="s6">6. Work Plan<small>Setiap tahap punya warna sendiri. Label "beban besar" = langkah yang paling banyak memakan waktu</small></h2>
+<p class="how">Urutannya seperti mengganti jalur pipa air di rumah: petakan dulu pipa lama dan kebocorannya, pasang pipa baru dan saringannya, uji alirannya, baru buka keran untuk dipakai sehari-hari.</p>
+<h3>Alur tahapan kerja</h3>
+<div class="card"><div class="wf">
+<div class="wrow"><div class="wl" style="--c:var(--navyH)"><h4>Tahap A · Perencanaan</h4><div class="ws" style="--k:2"><div class="wb"><span class="n">1</span><b>Memetakan proses lama</b><span class="s">alur macro + waktu</span></div><div class="wb"><span class="n">2</span><b>Merancang skema dan KPI</b><span class="s">kamus data</span></div></div></div><div class="wl" style="--c:var(--tealH)"><h4>Tahap B · Menyiapkan data</h4><div class="ws" style="--k:3"><div class="wb L"><span class="n">3</span><b>Membuat CSV simulasi</b><span class="s">file + ground truth</span></div><div class="wb L"><span class="n">4</span><b>Membangun parser</b><span class="s">Q1, Q2</span></div><div class="wb"><span class="n">5</span><b>Memuat ke database</b><span class="s">file DuckDB</span></div></div></div></div>
+<div class="wa r"><span>↓</span></div>
+<div class="wl" style="--c:var(--plumH)"><h4>Tahap C · Menghitung dan menganalisis</h4><div class="ws rev" style="--k:5"><div class="wb"><span class="n">6</span><b>Menulis query KPI</b><span class="s">view KPI</span></div><div class="wb"><span class="n">7</span><b>Rekonsiliasi Excel lama</b><span class="s">Q2, Q3</span></div><div class="wb L"><span class="n">8</span><b>Analisis Cpk &amp; tren</b><span class="s">Q4–Q8</span></div><div class="wb"><span class="n">9</span><b>Hitung waktu dihemat</b><span class="s">Q9, Q10</span></div><div class="wb"><span class="n">10</span><b>Cocokkan ground truth</b><span class="s">Q11, Q12</span></div></div></div>
+<div class="wa l"><span>↓</span></div>
+<div class="wrow1"><div class="wl" style="--c:var(--roseH)"><h4>Tahap D · Menyajikan</h4><div class="ws" style="--k:2"><div class="wb L"><span class="n">11</span><b>Membuat dashboard</b><span class="s">link dashboard</span></div><div class="wb"><span class="n">12</span><b>README &amp; finalisasi</b><span class="s">repositori siap</span></div></div></div></div>
+</div>
+<p class="note" style="text-align:center;margin-top:12px">Panah menunjukkan urutan pengerjaan. Angka di kotak sama dengan nomor langkah di bawah.</p></div>
+<div class="phases"><div class="ph" style="--ph:var(--navyH)"><p class="phase">Tahap A · Perencanaan</p>
+<ol class="steps">
+<li><b class="t">Memetakan proses lama</b><p>Mencatat langkah macro VBA dan copy-paste, contoh file CSV, jenis kesalahan yang pernah terjadi, dan waktu per file (dasar Q9).</p><p class="meta">Hasil: dokumen proses lama · Alat: Excel / Markdown</p></li>
+<li><b class="t">Merancang skema dan definisi KPI</b><p>Menentukan 4 tabel, aturan validasi file, dan rumus Max, Min, rata-rata, Cpk, serta out-of-spec rate.</p><p class="meta">Hasil: kamus data dan definisi KPI · Alat: Markdown</p></li>
+</ol></div>
+<div class="ph" style="--ph:var(--tealH)"><p class="phase">Tahap B · Menyiapkan data</p>
+<ol class="steps" style="counter-reset:s 2">
+<li class="L"><b class="t">Membuat file CSV simulasi</b><p>Program Python membuat ±1.200 file CSV dengan format mesin, termasuk file rusak dan nilai aneh yang ditanam.</p><p class="meta">Hasil: folder CSV, catatan ground truth · Alat: Python</p></li>
+<li class="L"><b class="t">Membangun parser dan validasi</b><p>Membaca file dengan pemisah kolom, ribuan, dan desimal yang benar, memvalidasi kolom dan rentang nilai, lalu mengarantina file gagal (Q1–Q2).</p><p class="meta">Hasil: skrip parser dan tes otomatis · Alat: Python (pandas), pytest</p></li>
+<li><b class="t">Memuat ke database dan mendeteksi file baru</b><p>Memuat data ke DuckDB. File yang sudah pernah dimuat dikenali lewat hash sehingga tidak masuk dua kali.</p><p class="meta">Hasil: file database dan ingest_log · Alat: DuckDB</p></li>
+</ol></div>
+<div class="ph" style="--ph:var(--plumH)"><p class="phase">Tahap C · Menghitung dan menganalisis</p>
+<ol class="steps" style="counter-reset:s 5">
+<li><b class="t">Menulis query KPI</b><p>Membuat view SQL untuk Max, Min, rata-rata, standar deviasi, Cpk, dan out-of-spec rate per model, kondisi, mesin, shift, dan minggu.</p><p class="meta">Hasil: kumpulan query dan view · Alat: SQL</p></li>
+<li><b class="t">Rekonsiliasi dengan workbook lama</b><p>Membandingkan hasil pipeline dengan angka di workbook lama pada sampel sesi uji, lalu menjelaskan setiap selisih (Q2–Q3).</p><p class="meta">Hasil: lembar rekonsiliasi · Alat: Excel, Python</p></li>
+<li class="L"><b class="t">Menganalisis Cpk dan tren</b><p>Menjawab Q4–Q8: peringkat Cpk, out-of-spec rate, perbandingan shift dan mesin, tren mingguan, dan efek kalibrasi atau lot lem.</p><p class="meta">Hasil: grafik dan tabel temuan · Alat: SQL, Python (Plotly)</p></li>
+<li><b class="t">Menghitung waktu yang dihemat</b><p>Membandingkan menit per file proses lama dan pipeline, lalu menghitung jam per tahun. Angka diberi label estimasi (Q9–Q10).</p><p class="meta">Hasil: tabel estimasi · Alat: Python (pandas)</p></li>
+<li><b class="t">Mencocokkan dengan fakta yang ditanam</b><p>Memeriksa apakah semua file rusak, nilai aneh, dan pergeseran yang ditanam tertangkap, serta menjalankan pipeline dua kali untuk uji duplikat (Q11–Q12).</p><p class="meta">Hasil: bagian validasi di README · Alat: Python, pytest</p></li>
+</ol></div>
+<div class="ph" style="--ph:var(--roseH)"><p class="phase">Tahap D · Menyajikan</p>
+<ol class="steps" style="counter-reset:s 10">
+<li class="L"><b class="t">Membuat dashboard</b><p>Dashboard 3 halaman: Ringkasan Cpk, Detail per model dan kondisi (tren dan histogram), dan Status file (dimuat, dilewati, dikarantina). Dipublikasikan agar bisa dibuka lewat link.</p><p class="meta">Hasil: link dashboard · Alat: Streamlit, Plotly</p></li>
+<li><b class="t">Menulis README, rekomendasi, dan finalisasi</b><p>Menulis masalah, data, analisis, rekomendasi, dampak, dan batasan, termasuk diagram alur data. Merapikan repositori dan checklist.</p><p class="meta">Hasil: repositori GitHub siap ditinjau · Alat: Markdown, GitHub</p></li>
+</ol></div>
+</div>
+<h2 id="s7">7. Project Outputs<span class="add">Komponen tambahan</span><small>Hasil nyata yang bisa dibuka, dibaca, atau dipakai ulang setelah project selesai</small></h2>
+<p class="how">Setiap kartu adalah satu output. Label "Utama" berarti wajib dibuat, "Opsional" dibuat jika waktu tersisa. Setiap output ditujukan untuk pembaca yang berbeda.</p>
+<div class="outs"><div class="card out" style="--h:var(--navyH)"><div class="oh"><b>Pipeline pemuatan data</b><span class="ob">Utama</span></div><ul><li>Skrip yang membaca folder CSV, memvalidasi, dan memuat file baru ke database.</li><li>Alamat folder dan spesifikasi diatur lewat file konfigurasi.</li><li>Bentuk: skrip .py dan file konfigurasi.</li><li>Untuk: engineer yang mengelola data mesin uji.</li></ul></div><div class="card out" style="--h:var(--roseH)"><div class="oh"><b>Dashboard interaktif</b><span class="ob">Utama</span></div><ul><li>Ringkasan Cpk, tren per model dan kondisi, histogram terhadap spesifikasi, dan status file.</li><li>Dilengkapi filter model, kondisi, mesin, shift, dan tanggal.</li><li>Bentuk: link publik (Streamlit Community Cloud).</li><li>Untuk: engineer dan supervisor quality.</li></ul></div><div class="card out" style="--h:var(--tealH)"><div class="oh"><b>Database &amp; query SQL</b><span class="ob">Utama</span></div><ul><li>File DuckDB berisi 4 tabel dan view KPI.</li><li>Satu sumber angka untuk semua laporan.</li><li>Bentuk: file .duckdb dan folder query .sql.</li><li>Untuk: analis yang memakai ulang data.</li></ul></div><div class="card out" style="--h:var(--plumH)"><div class="oh"><b>Pembuat file CSV simulasi</b><span class="ob">Utama</span></div><ul><li>Skrip yang membuat file CSV seperti keluaran mesin, termasuk file rusak.</li><li>Hasilnya selalu sama setiap dijalankan, parameter bisa diubah.</li><li>Bentuk: skrip .py dan ground truth .json.</li><li>Untuk: menguji ulang pipeline dengan skenario berbeda.</li></ul></div><div class="card out" style="--h:var(--skyH)"><div class="oh"><b>Notebook analisis</b><span class="ob">Utama</span></div><ul><li>Analisis Q1–Q12 lengkap dengan grafik dan penjelasan.</li><li>Mencatat rekonsiliasi dengan workbook lama.</li><li>Bentuk: Jupyter Notebook (.ipynb).</li><li>Untuk: pembaca teknis.</li></ul></div><div class="card out" style="--h:var(--amberH)"><div class="oh"><b>Laporan temuan &amp; rekomendasi</b><span class="ob">Utama</span></div><ul><li>Masalah, data, temuan, rekomendasi, estimasi dampak, dan batasan.</li><li>Angka dampak diberi label estimasi.</li><li>Bentuk: README di GitHub.</li><li>Untuk: semua pembaca, sebagai pintu masuk project.</li></ul></div><div class="card out" style="--h:var(--navyH)"><div class="oh"><b>Repositori GitHub</b><span class="ob">Utama</span></div><ul><li>Semua output tersusun rapi, dengan tes otomatis.</li><li>Petunjuk menjalankan pipeline dari awal.</li><li>Bentuk: link repositori GitHub.</li><li>Untuk: recruiter dan reviewer portofolio.</li></ul></div><div class="card out" style="--h:var(--tealH)"><div class="oh"><b>Slide presentasi</b><span class="ob opt">Opsional</span></div><ul><li>5–7 slide: masalah macro lama, pipeline baru, temuan Cpk, dan waktu yang dihemat.</li><li>Bentuk: PDF atau PowerPoint.</li><li>Untuk: presentasi saat wawancara kerja.</li></ul></div></div>
+<h3>Daftar dokumen yang akan dihasilkan</h3>
+<p class="how">Nama file adalah usulan awal dan bisa disesuaikan. Tabel diurutkan menurut tahap pengerjaan (A sampai D). Folder CSV mentah dan file database tidak di-commit karena bisa dibuat ulang dari skrip; repositori hanya menyimpan beberapa contoh file.</p>
+<div class="scroll"><table class="docs"><tr><th>Nama dokumen</th><th>Isi</th><th>Tahap</th><th>Label</th></tr><tr><td><code>docs/old_process.md</code></td><td>Alur macro VBA lama, contoh masalah, dan waktu per file</td><td>Tahap A</td><td><span class="ob">Utama</span></td></tr><tr><td><code>docs/data_dictionary.md</code></td><td>Kamus data 4 tabel, aturan validasi, dan definisi KPI</td><td>Tahap A</td><td><span class="ob">Utama</span></td></tr><tr><td><code>scripts/generate_csv.py</code></td><td>Pembuat file CSV simulasi (seed tetap)</td><td>Tahap B</td><td><span class="ob">Utama</span></td></tr><tr><td><code>data/raw/*.csv</code></td><td>File CSV simulasi. Tidak di-commit kecuali contoh di data/samples/</td><td>Tahap B</td><td><span class="ob">Utama</span></td></tr><tr><td><code>data/ground_truth.json</code></td><td>Catatan file rusak, nilai aneh, dan pergeseran yang ditanam</td><td>Tahap B</td><td><span class="ob">Utama</span></td></tr><tr><td><code>pipeline/ingest.py</code></td><td>Parser, validasi, karantina, dan pemuatan ke database</td><td>Tahap B</td><td><span class="ob">Utama</span></td></tr><tr><td><code>pipeline/config.yaml</code></td><td>Alamat folder dan pengaturan pipeline</td><td>Tahap B</td><td><span class="ob">Utama</span></td></tr><tr><td><code>tests/test_ingest.py</code></td><td>Tes otomatis parser</td><td>Tahap B</td><td><span class="ob">Utama</span></td></tr><tr><td><code>pushtest.duckdb</code></td><td>File database. Tidak di-commit, dibuat ulang dari pipeline</td><td>Tahap B</td><td><span class="ob">Utama</span></td></tr><tr><td><code>sql/</code></td><td>Query dan view KPI</td><td>Tahap C</td><td><span class="ob">Utama</span></td></tr><tr><td><code>outputs/reconciliation.xlsx</code></td><td>Rekonsiliasi pipeline vs workbook lama</td><td>Tahap C</td><td><span class="ob">Utama</span></td></tr><tr><td><code>notebooks/analysis.ipynb</code></td><td>Analisis Q1–Q12 dengan grafik</td><td>Tahap C</td><td><span class="ob">Utama</span></td></tr><tr><td><code>dashboard/app.py</code></td><td>Aplikasi dashboard Streamlit</td><td>Tahap D</td><td><span class="ob">Utama</span></td></tr><tr><td><code>requirements.txt</code></td><td>Daftar library Python</td><td>Tahap D</td><td><span class="ob">Utama</span></td></tr><tr><td><code>README.md</code></td><td>Laporan temuan, rekomendasi, dampak, dan batasan</td><td>Tahap D</td><td><span class="ob">Utama</span></td></tr><tr><td><code>index.html</code></td><td>Halaman rancangan project ini (GitHub Pages)</td><td>Tahap D</td><td><span class="ob">Utama</span></td></tr><tr><td><code>slides/presentation.pdf</code></td><td>Slide presentasi wawancara</td><td>Tahap D</td><td><span class="ob opt">Opsional</span></td></tr></table></div>
+<h2 id="s8">8. Success Criteria<span class="add">Komponen tambahan</span><small>Kapan project dianggap selesai dan berhasil</small></h2>
+<div class="card">
+<h3>Project dianggap berhasil jika</h3>
+<ul class="tight"><li>Kedelapan pertanyaan berlabel "Utama" terjawab dengan angka dari data.</li><li>Semua file normal termuat, dan semua file rusak yang ditanam masuk karantina dengan alasan yang benar.</li><li>Menjalankan pipeline dua kali tidak menambah satu baris pun (tidak ada duplikat).</li><li>Max, Min, rata-rata, dan Cpk dari SQL sama dengan hitungan manual Excel pada sampel yang dicek.</li><li>Orang awam bisa membuka dashboard dan menyebutkan kombinasi model dan kondisi dengan Cpk terendah dalam waktu kurang dari 1 menit.</li><li>Checklist standar terpenuhi: pertanyaan bisnis, data cleaning, analisis SQL, dashboard ter-deploy, README berisi insight dan rekomendasi.</li></ul></div>
+<h2 id="s9">9. Assumptions &amp; Limitations<span class="add">Komponen tambahan</span><small>Keputusan yang sudah diambil dan hal yang perlu diwaspadai</small></h2>
+<div class="two"><div><details open><summary>Jenis data: simulasi meniru file mesin <span class="pill">Sudah Anda setujui</span></summary><p>Semua file CSV dibuat program dengan format yang meniru keluaran mesin push test. Hasil akhir membuktikan pipeline dan metodenya bekerja, bukan menggambarkan kondisi pabrik sebenarnya.</p></details><details><summary>Konteks: perekatan lensa lampu depan sepeda motor <span class="pill">Sudah Anda setujui</span></summary><p>Halaman publik memakai push test perekatan lensa lampu depan sepeda motor, Model A dan B, sama dengan Project 15. Struktur masalahnya (file CSV mesin, macro VBA, salah baca angka, Cpk per model dan kondisi) tetap sama.</p></details><details><summary>Tools: DuckDB + Streamlit <span class="pill">Sudah Anda setujui</span></summary><p>Konsisten dengan project lain. Daftar portofolio menulis SQLite/PostgreSQL dan Streamlit/Power BI; kolom Tools di daftar sebaiknya diperbarui.</p></details></div>
+<div><details><summary>Ruang lingkup <span class="pill d">Usulan awal</span></summary><p>2 model, 2 kondisi, 2 jenis uji, 2 mesin, 2 shift, ±3 bulan. Pipeline dijalankan terjadwal (misalnya setiap jam), bukan real-time. Dampak dihitung dalam menit kerja, belum dalam rupiah.</p></details><details><summary>Hal yang perlu diwaspadai <span class="pill d">Usulan awal</span></summary><p><b>Cpk butuh data yang cukup.</b> Cpk dari kurang dari ±30 hasil ukur tidak stabil. Dashboard menampilkan jumlah data di samping setiap Cpk.</p><p><b>Spesifikasi lebar.</b> Rentang 1.500–19.000 g sangat lebar, sehingga Cpk lebih ditentukan oleh batas bawah. Dashboard menampilkan jarak ke LSL secara terpisah.</p><p><b>Format mesin bisa berubah.</b> Pipeline hanya mengenali format yang terdaftar. Format baru masuk karantina sampai aturannya ditambahkan.</p><p><b>Pola belum tentu penyebab.</b> Pergeseran setelah kalibrasi baru dugaan, perlu dicek di lapangan.</p></details></div></div>
+</div>
+
+<div class="pane" id="report" data-tab="report" hidden>
+<div class="callout a"><h4>Status Report Project</h4><p>Laporan hasil diisi setelah analisis dikerjakan. Sudah ditulis: Problem, Data, Analysis, Impact, Batasan. Masih kosong: Recommendation. Rancangan lengkap ada di tab <a href="#design">Design Project</a>.</p></div>
+<div class="scroll"><table><tr><th>Bagian</th><th>Status</th><th>Diisi setelah</th></tr>
+<tr><td><b>Problem</b></td><td><span class="pill">Draft</span></td><td>Sudah ditulis dari rancangan</td></tr>
+<tr><td><b>Data</b></td><td><span class="pill">Draft</span></td><td>Tahap B, langkah 3 sampai 5</td></tr>
+<tr><td><b>Analysis</b></td><td><span class="pill">Draft</span></td><td>Tahap C, langkah 6 sampai 10</td></tr>
+<tr><td><b>Recommendation</b></td><td><span class="pill d">Belum dikerjakan</span></td><td>Tahap D, langkah 11 sampai 12</td></tr>
+<tr><td><b>Impact</b></td><td><span class="pill">Draft</span></td><td>Tahap C, langkah 6 sampai 10</td></tr>
+<tr><td><b>Batasan</b></td><td><span class="pill">Draft</span></td><td>Diperbarui setelah Tahap B (langkah 3 sampai 5)</td></tr>
+</table></div>
+
+<h2 id="rp1">1. Problem<small>Pertanyaan yang ingin dijawab</small></h2>
+<div class="card"><p>Bagaimana mengganti macro VBA dan copy-paste manual agar data CSV mesin push test otomatis masuk database, terbaca dengan benar, dan siap dianalisis per model dan kondisi proses?</p></div>
+
+<h2 id="rp2">2. Data<small>Sumber, ukuran, dan perlakuan awal</small></h2>
+<div class="card"><p>Data simulasi buatan sendiri, dibuat oleh <code>scripts/generate_csv.py</code> (seed tetap). Perkiraan ±1.200 file CSV dan ±15.000 baris hasil ukur (2 model, 2 kondisi, 2 mesin, 2 shift, ±3 bulan). File rusak, salah format angka, dan pergeseran sengaja ditanam sebagai ground truth. Tidak memakai data perusahaan.</p></div>
+
+<h2 id="rp3">3. Analysis<small>Hasil perhitungan dari data</small></h2>
+<div class="card"><p>Rencana: parse success rate, rekonsiliasi dengan workbook lama, Max/Min/rata-rata/Cpk dan out-of-spec rate per model dan kondisi, tren mingguan. Belum dikerjakan.</p></div>
+
+<h2 id="rp4">4. Recommendation<small>Tindakan yang disarankan dari temuan</small></h2>
+<div class="card"><p>Belum dikerjakan.</p></div>
+
+<h2 id="rp5">5. Impact<small>Seberapa besar manfaatnya</small></h2>
+<div class="card"><p>Belum dikerjakan. Angka dampak akan diberi label <code>estimated</code> / <code>simulated</code>.</p></div>
+
+<h2 id="rp6">6. Batasan yang sudah diketahui<small>Hal yang perlu diwaspadai saat membaca hasil</small></h2>
+<div class="card"><ul class="tight"><li>Cpk dari kurang dari ±30 hasil ukur tidak stabil.</li><li>Rentang spesifikasi 1.500–19.000 g lebar, sehingga Cpk lebih ditentukan batas bawah.</li><li>Format mesin baru masuk karantina sampai aturannya ditambahkan.</li><li>Waktu manual per file adalah estimasi.</li></ul></div>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id),fg=v=>Math.round(v).toLocaleString('id-ID'),f2=v=>v.toFixed(2).replace('.',',');
+function mb(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=mb(20),N=300,LSL=1500,USL=19000,X=[],ORD=[];for(let i=0;i<N;i++){const u=R()||1e-9,v=R();X.push(Math.round((9000+1700*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v))*10)/10);ORD.push(i)}
+for(let i=N-1;i>0;i--){const j=Math.floor(R()*(i+1));[ORD[i],ORD[j]]=[ORD[j],ORD[i]]}
+const st=a=>{const m=a.reduce((s,x)=>s+x,0)/a.length,s=Math.sqrt(a.reduce((q,x)=>q+(x-m)**2,0)/(a.length-1));return{m,s,c:Math.min(USL-m,m-LSL)/(3*s)}};
+const T0=st(X),cp=c=>c<0?'< 0':f2(c);
+function draw(){const p=+$('sl').value,k=Math.round(p/100*N),bad=new Set(ORD.slice(0,k)),Y=X.map((x,i)=>bad.has(i)?Math.round(x/100)/10:x),S=st(Y);
+$('slo').textContent=String(p).replace('.',',')+'%';
+const b=[];for(let v=0;v<20000;v+=1000)b.push(Y.filter(x=>x>=v&&x<v+1000).length);const mx=Math.max(...b),W=1000,H=200,bw=W/20,sx=v=>v/20000*W;
+let s=`<svg viewBox="-30 -20 ${W+60} ${H+62}" role="img" aria-label="Histogram hasil ukur kekuatan rekat dengan batas spesifikasi">`;
+b.forEach((c,i)=>{const h=c/mx*(H-20);s+=`<rect class="hb" x="${i*bw+2}" y="${H-h}" width="${bw-4}" height="${h}" rx="3" ${i==0&&c?'style="fill:var(--roseH)"':''}/>`});
+s+=`<line class="ax" x1="0" x2="${W}" y1="${H}" y2="${H}"/>`;
+[0,2500,5000,7500,10000,12500,15000,17500,20000].forEach(v=>s+=`<text class="tx" x="${sx(v)}" y="${H+16}" text-anchor="middle">${v.toLocaleString('id-ID')}</text>`);
+[[LSL,'LSL'],[USL,'USL']].forEach(([v,t])=>s+=`<line class="sp" x1="${sx(v)}" x2="${sx(v)}" y1="8" y2="${H}"/><text class="tx" x="${sx(v)}" y="6" text-anchor="middle" style="fill:var(--roseH);font-weight:700">${t}</text>`);
+s+=`<text class="tx" x="${W/2}" y="${H+36}" text-anchor="middle">kekuatan rekat (g) · ${k} nilai salah baca menumpuk di batang merah dekat 0 g</text></svg>`;
+$('hist').innerHTML=s;$('r1').textContent=fg(S.m)+' g';$('r2').textContent=cp(S.c);$('r3').textContent=f2(T0.c);
+$('ins').innerHTML=k?`Hanya <b>${k} dari ${N} baris</b> yang salah baca membuat rata-rata terbaca turun dari ${fg(T0.m)} menjadi ${fg(S.m)} g dan Cpk turun dari ${f2(T0.c)} menjadi <b>${cp(S.c)}</b>. ${S.c<1.33?'Proses yang sebenarnya mampu tampak tidak mampu, dan engineer bisa menghabiskan waktu mencari masalah yang tidak ada.':'Cpk masih di atas 1,33, tetapi sudah turun tanpa ada perubahan proses.'}`:`Tanpa salah baca, rata-rata ${fg(T0.m)} g dan Cpk ${f2(T0.c)}, di atas batas 1,33. Geser slider untuk melihat efek salah baca angka.`}
+$('sl').oninput=draw;draw();
+const G=[["CSV","","Comma-Separated Values: file teks berisi tabel, setiap kolom dipisah tanda koma atau titik koma."],["pipeline","i","Rangkaian langkah otomatis yang membawa data dari sumber (file mesin) sampai siap dipakai (database dan dashboard)."],["push test","i","Uji kekuatan rekat: mesin menekan lensa sampai lepas dari rumahnya dan mencatat gaya maksimalnya dalam gram (g)."],["shear test","i","Uji kekuatan rekat dengan gaya dari samping (geser)."],["macro VBA","i","Program kecil di dalam Excel untuk mengotomatiskan langkah, misalnya menyalin data dari file lain."],["parser","i","Program yang membaca file dan mengubah isinya menjadi tabel yang rapi."],["Cpk","","Process Capability Index: ukuran seberapa baik proses berada di dalam batas spesifikasi.\nRumus: Cpk = min(USL − rata-rata, rata-rata − LSL) ÷ (3 × standar deviasi).\nContoh: Cpk ≥ 1,33 umumnya dianggap mampu."],["LSL","","Lower Specification Limit: batas bawah spesifikasi."],["USL","","Upper Specification Limit: batas atas spesifikasi."],["out-of-spec rate","i","Persentase hasil ukur di luar batas spesifikasi.\nRumus: out-of-spec rate = hasil ukur < LSL atau > USL ÷ total hasil ukur."],["parse success rate","i","Persentase file yang berhasil dibaca dan dimuat tanpa intervensi.\nRumus: parse success rate = file dimuat ÷ total file baru."],["oven","i","Proses pemanasan untuk mengeringkan dan mengeraskan lem (curing). Kekuatan rekat diuji sebelum dan sesudah tahap ini."],["karantina","i","Folder khusus untuk file yang gagal dibaca, agar tidak hilang dan bisa diperbaiki lalu dimuat ulang."],["hash","i","Sidik jari digital sebuah file. File yang isinya sama persis selalu punya hash yang sama, sehingga duplikat mudah dikenali."],["idempoten","i","Sifat proses yang hasilnya sama walaupun dijalankan berkali-kali, misalnya tidak menambah data ganda."],["rekonsiliasi","i","Mencocokkan dua sumber angka yang seharusnya sama, lalu menjelaskan selisihnya."],["KPI","","Key Performance Indicator: angka kunci untuk menilai kinerja."],["SQL","","Bahasa untuk meminta dan mengolah data dari tabel database."],["DuckDB","i","Database ringan dalam satu file, untuk menjalankan SQL tanpa server."],["dashboard","i","Halaman ringkasan interaktif berisi grafik dan angka kunci."],["Streamlit","i","Alat untuk membuat dashboard web memakai Python."],["view","i","Query SQL yang disimpan dengan nama, sehingga bisa dipanggil seperti tabel."],["ground truth","i","Fakta yang sengaja ditanam di data simulasi untuk memeriksa apakah analisis berhasil menemukannya."],["data simulasi","i","Data buatan komputer yang meniru kondisi nyata, bukan hasil pencatatan di pabrik."],["seed","i","Angka kunci pengacak. Dengan seed yang sama, data acak yang sama bisa dibuat ulang."],["pytest","","Alat untuk menulis dan menjalankan tes otomatis pada kode Python."],["kalibrasi","i","Penyesuaian alat ukur terhadap standar agar hasil ukurnya benar."],["shift","i","Pembagian jam kerja, misalnya shift pagi dan shift malam."],["kamus data","i","Dokumen yang menjelaskan arti, satuan, dan contoh isi setiap kolom."],["README","","Dokumen penjelasan project yang dibaca pertama kali di repositori GitHub."],["standar deviasi","i","Ukuran seberapa jauh data menyebar dari rata-ratanya."],["boxplot","i","Grafik yang menunjukkan median, sebaran tengah, dan nilai ekstrem sebuah kelompok data."]];
+const TERMS=G.map(([t,f,d])=>({t,d,re:new RegExp('(?<![\\w-])'+t.replace(/[.*+?^${}()|[\]\\-]/g,'\\$&')+'(?![\\w-])',f)}));
+const SK='svg,.fx,.fbar,.oh,.wb,table td:first-child,h1,h2,h3,nav,button,script,style,summary,.tm,.tag,.pri,.pill,.v,.l,.chip,.flow,th,#tip,.banner,.theme,.phase,.add,.tools b,b.t,code,.row,.res';
+function wrapT(n,seen){let b=null;for(const x of TERMS){if(seen.has(x.t))continue;const m=x.re.exec(n.data);if(m&&(!b||m.index<b.i||(m.index==b.i&&m[0].length>b.l)))b={x,i:m.index,l:m[0].length}}
+if(!b)return;seen.add(b.x.t);const r=n.splitText(b.i),a=r.splitText(b.l),s=document.createElement('span');s.className='tm';s.tabIndex=0;s.dataset.d=b.x.d;s.textContent=r.data;r.replaceWith(s);wrapT(a,seen)}
+function hl(root,seen){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest(SK)?3:1}),ns=[];while(w.nextNode())ns.push(w.currentNode);ns.forEach(n=>wrapT(n,seen))}
+const tip=document.createElement('div');tip.id='tip';tip.setAttribute('role','tooltip');document.body.appendChild(tip);
+function showT(e){tip.textContent=e.dataset.d;tip.style.display='block';const r=e.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;tip.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left))+'px';tip.style.top=(r.bottom+h+12>innerHeight?r.top-h-6:r.bottom+6)+'px'}
+document.addEventListener('click',ev=>{const t=ev.target.closest('.tm');t?showT(t):tip.style.display='none'});
+document.addEventListener('mouseover',ev=>{const t=ev.target.closest('.tm');if(t)showT(t)});
+document.addEventListener('mouseout',ev=>{if(ev.target.closest&&ev.target.closest('.tm'))tip.style.display='none'});
+document.addEventListener('focusin',ev=>{const t=ev.target.closest&&ev.target.closest('.tm');if(t)showT(t)});
+addEventListener('scroll',()=>tip.style.display='none',{passive:true});
+const qg=document.getElementById('qg'),qbar=document.querySelector('.fbar[aria-label="Filter pertanyaan"]');qbar.onclick=e=>{const b=e.target.closest('.fb');if(!b)return;const f=b.dataset.f;
+qbar.querySelectorAll('.fb').forEach(x=>x.classList.toggle('on',x==b));let th=null,vis=0;
+[...qg.children].forEach(el=>{if(el.classList.contains('theme')){if(th)th.hidden=!vis;th=el;vis=0}else{const show=f=='*'||el.dataset.p==f;el.hidden=!show;if(show)vis++}});if(th)th.hidden=!vis};
+let seen=new Set();document.querySelectorAll('main>.pane>*').forEach(el=>{if(el.tagName=='H2')seen=new Set();hl(el,seen)});
+
+const TB=[...document.querySelectorAll('.tab')];
+function setTab(t){document.querySelectorAll('.pane,.links').forEach(e=>e.hidden=e.dataset.tab!==t);TB.forEach(x=>{const on=x.dataset.t===t;x.classList.toggle('on',on);x.setAttribute('aria-expanded',on)})}
+function route(){const h=decodeURIComponent(location.hash.slice(1)),el=h&&document.getElementById(h);
+if(h=='design'||h=='report'){setTab(h);scrollTo(0,0);return}
+if(el){const p=el.closest('.pane');if(p){setTab(p.dataset.tab);el.scrollIntoView()}}}
+TB.forEach(x=>x.onclick=()=>{location.hash=x.dataset.t});
+addEventListener('hashchange',route);route();
+</script>
+</body></html>

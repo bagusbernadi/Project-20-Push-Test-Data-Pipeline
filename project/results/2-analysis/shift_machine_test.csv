@@ -1,0 +1,3 @@
+faktor,kelompok_a,kelompok_b,sesi_a,sesi_b,median_resid_a,median_resid_b,selisih_rata_g,p_mannwhitney
+shift,Shift 1,Shift 2,626,533,0.1319596213,51.66761443,50.68774797,0.02639942806
+machine_id,PT-01,PT-02,559,600,118.0792572,-79.91415631,-238.8322995,1.736221739e-24

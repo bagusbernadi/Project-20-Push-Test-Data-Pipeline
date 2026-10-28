@@ -1,0 +1,25 @@
+model,condition,ukuran,pipeline,macro,selisih
+Model A,after_oven,n,3531,3578,47
+Model A,after_oven,mean_g,8474.066468,8199.87268,-274.1937883
+Model A,after_oven,min_g,4823.1,6.7691,-4816.3309
+Model A,after_oven,max_g,11642.9,11642.9,0
+Model A,after_oven,cpk,2.580154877,1.306170943,-1.273983934
+Model A,after_oven,oos_rate,0,0.03074343208,0.03074343208
+Model A,before_oven,n,3854,3936,82
+Model A,before_oven,mean_g,7067.120161,6906.363159,-160.7570015
+Model A,before_oven,min_g,4068.8,5.209,-4063.591
+Model A,before_oven,max_g,10331.4,10331.4,0
+Model A,before_oven,cpk,2.058126495,1.313026685,-0.7450998101
+Model A,before_oven,oos_rate,0,0.02235772358,0.02235772358
+Model B,after_oven,n,3584,3639,55
+Model B,after_oven,mean_g,8155.996261,7918.904003,-237.0922585
+Model B,after_oven,min_g,5082.4,6.1847,-5076.2153
+Model B,after_oven,max_g,11388.2,11388.2,0
+Model B,after_oven,cpk,2.447423769,1.298387306,-1.149036463
+Model B,after_oven,oos_rate,0,0.0296784831,0.0296784831
+Model B,before_oven,n,3507,3516,9
+Model B,before_oven,mean_g,6676.220388,6426.128758,-250.0916299
+Model B,before_oven,min_g,3894.6,4.0983,-3890.5017
+Model B,before_oven,max_g,9606.9,9606.9,0
+Model B,before_oven,cpk,1.950204223,1.066223382,-0.8839808408
+Model B,before_oven,oos_rate,0,0.03782707622,0.03782707622

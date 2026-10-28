@@ -1,0 +1,14 @@
+pemeriksaan,hasil
+halaman Ringkasan Cpk tanpa error,lulus
+Cpk terendah sama dengan CSV,lulus
+kombinasi terendah sama dengan CSV,lulus
+"kombinasi di bawah 1,33 sama dengan CSV",lulus
+halaman Detail tanpa error,lulus
+ganti model dan kondisi tanpa error,lulus
+kalimat Cpk detail sama dengan CSV,lulus
+filter mesin tanpa error,lulus
+halaman Status file tanpa error,lulus
+file dimuat sama dengan CSV,lulus
+file dikarantina sama dengan CSV,lulus
+filter alasan tanpa error,lulus
+jumlah file terpotong sama dengan CSV,lulus
