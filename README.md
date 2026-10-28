@@ -20,6 +20,8 @@ Bagaimana mengganti macro VBA dan copy-paste manual agar data CSV mesin push tes
 ## 2. Data
 Data simulasi buatan sendiri, dibuat oleh `scripts/generate_csv.py` (seed tetap). Perkiraan ±1.200 file CSV dan ±15.000 baris hasil ukur (2 model, 2 kondisi, 2 mesin, 2 shift, ±3 bulan). File rusak, salah format angka, dan pergeseran sengaja ditanam sebagai ground truth. Tidak memakai data perusahaan.
 
+Versi data: v1. Tanggal dibuat: 28 Okt 2026. Seed: 20260401. Generator: `scripts/generate_csv.py`. Hasil v1: 1.200 file CSV + 14 salinan ganda, 14.990 baris hasil ukur.
+
 ## 3. Analysis
 Rencana: parse success rate, rekonsiliasi dengan workbook lama, Max/Min/rata-rata/Cpk dan out-of-spec rate per model dan kondisi, tren mingguan. Belum dikerjakan.
 
