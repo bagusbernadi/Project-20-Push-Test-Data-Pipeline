@@ -1,6 +1,8 @@
 jenis,ditanam,terdeteksi,tidak_terdeteksi
 format mesin baru,18,18,0
-file terpotong (bukan format baru),23,23,0
+file terpotong (bukan format baru),23,21,2
 file terpotong yang juga format baru,1,1,0
+file kosong,10,10,0
+kolom hilang (tanpa kolom Force),10,10,0
 salinan ganda (nama copy_of_),14,14,0
 format angka titik/koma lain (tidak rusak),36,36,0

@@ -78,6 +78,10 @@ ph_shift, ph_mach = ph
 err = ilog[(ilog.attempt == 1) & (ilog.status != "loaded")].groupby(["status", "error_type"]).size().reset_index(name="file")
 errd = {(r.status, r.error_type): int(r.file) for r in err.itertuples()}
 q_trunc, q_fmt, d_dup = errd[("quarantined", "terpotong")], errd[("quarantined", "format_mesin_baru")], errd[("skipped", "duplikat_isi")]
+q_empty, q_hdr = errd[("quarantined", "file_kosong")], errd[("quarantined", "header_tidak_lengkap")]
+f1, f2, f3, f4, f5 = (fct.loc[i] for i in (1, 2, 3, 4, 5)); inv_pl = int(fct.loc[5, "kombinasi"]); n_below = int(cpk.di_bawah_cpk_target.sum())
+sens = rd(r2, "dip_sensitivity.csv"); C_WIN = int(sorted(set(sens.panjang_jendela_hari))[1])
+wk_of = lambda t: f"{file_week(t).year}-W{file_week(t).week:02d}"
 w_ok = wilson(int(a1.loaded), uniq)
 low = cpk.sort_values("cpk").iloc[0]; high = cpk.sort_values("cpk").iloc[-1]
 cpkmin_ci = (low.cpk_ci_low, low.cpk_ci_high)
@@ -87,7 +91,7 @@ d_cpk = cp_rows.selisih.abs()
 d_min = mgc[mgc.ukuran == "min_g"].selisih
 mean_pipe, mean_mac = ms.rata_nilai_berubah_pipeline, ms.rata_nilai_berubah_macro
 file_week = lambda t: pd.Timestamp(t).isocalendar()
-cpw = f"{file_week(cp.loc['PT-02', 'tanggal_titik_ubah']).year}-W{file_week(cp.loc['PT-02', 'tanggal_titik_ubah']).week:02d}"
+cpw0, cpw1 = f"{file_week(cp.loc['PT-02', 'tanggal_mulai']).year}-W{file_week(cp.loc['PT-02', 'tanggal_mulai']).week:02d}", f"{file_week(cp.loc['PT-02', 'tanggal_selesai']).year}-W{file_week(cp.loc['PT-02', 'tanggal_selesai']).week:02d}"
 wk_list = list(wa.iso_week)
 imp5 = imp[imp.dasar == 1].iloc[0]
 imp3 = imp[imp.menit_per_file == imp.menit_per_file.min()].iloc[0]; imp10 = imp[imp.menit_per_file == imp.menit_per_file.max()].iloc[0]
@@ -97,14 +101,14 @@ low_q = [f"Q{n}" for n in (1, 2, 3)]
 
 # ---------- grafik ----------
 st_items = [("Dimuat", int(a1.loaded), BLUE, f"dimuat: {I(a1.loaded)} file"), ("Terpotong", q_trunc, "#E8710A", f"karantina, terpotong: {I(q_trunc)} file"),
-            ("Format mesin baru", q_fmt, "#E8710A", f"karantina, format mesin baru: {I(q_fmt)} file"), ("Duplikat isi", d_dup, GREY, f"dilewati, duplikat isi: {I(d_dup)} file")]
+            ("Format mesin baru", q_fmt, "#E8710A", f"karantina, format mesin baru: {I(q_fmt)} file"), ("Header tidak lengkap", q_hdr, "#E8710A", f"karantina, header tidak lengkap: {I(q_hdr)} file"), ("File kosong", q_empty, "#E8710A", f"karantina, file kosong: {I(q_empty)} file"), ("Duplikat isi", d_dup, GREY, f"dilewati, duplikat isi: {I(d_dup)} file")]
 chart_status = R.hbars(st_items, lambda v: I(v), "Grafik jumlah file per status pemuatan", 1300)
 chart_cpk = bars([(gname(r), float(r.cpk), BLUE, f"{gname(r)}: Cpk {D(r.cpk, 2)} (CI {D(r.cpk_ci_low, 2)} sampai {D(r.cpk_ci_high, 2)})") for r in cpk.itertuples()], lambda v: D(v, 1),
                  "Grafik Cpk per model dan kondisi", rot=0, small=True)
 chart_wk = lines([w[-3:] for w in wk_list], [("PT-01", GREY, 2, [float(wm[(wm.machine_id == "PT-01") & (wm.iso_week == w)].mean_g.iloc[0]) for w in wk_list]),
                                               ("PT-02", BLUE, 2, [float(wm[(wm.machine_id == "PT-02") & (wm.iso_week == w)].mean_g.iloc[0]) for w in wk_list])],
                  lambda v: I(v), "Grafik rata-rata kekuatan rekat per minggu, per mesin", h=260,
-                 bands=[i for i, w in enumerate(wk_list) if w >= cpw], band_label="setelah titik ubah PT-02, minggu")
+                 bands=[i for i, w in enumerate(wk_list) if cpw0 <= w <= cpw1], band_label="jendela penurunan PT-02, minggu")
 chart_cpkw = lines([w[-3:] for w in wk_list], [("Cpk", BLUE, 2, [float(v) for v in wa.cpk])], lambda v: D(v, 1), "Grafik Cpk gabungan per minggu", h=240, zero=True)
 
 # ---------- pertanyaan ----------
@@ -125,24 +129,24 @@ QS = [
 WARN = {1, 2, 3, 4, 5, 6, 8, 9, 10, 11}
 ANS = {
     1: (f"Dari {I(uniq)} file unik, {I(a1.loaded)} dimuat: parse success rate {P(a1.loaded / uniq, 1)} (CI Wilson {D(w_ok[0] * 100, 1)}% sampai {D(w_ok[1] * 100, 1)}%). {I(a1.quarantined)} file masuk karantina dengan alasan: "
-        f"{I(q_trunc)} terpotong (tidak berakhir baris baru) dan {I(q_fmt)} berformat mesin baru; {I(d_dup)} salinan dilewati karena isi sama (hash). Aturan terpotong adalah asumsi (docs/definitions.md); data adalah simulasi."),
+        f"{I(q_trunc)} terpotong (tidak berakhir baris baru), {I(q_hdr)} header tidak lengkap (kolom hilang), {I(q_empty)} kosong, dan {I(q_fmt)} berformat mesin baru; {I(d_dup)} salinan dilewati karena isi sama (hash). Aturan terpotong adalah asumsi (docs/definitions.md); data adalah simulasi."),
     2: (f"Macro lama (ditiru dari deskripsi rancangan) salah membaca {I(ms.nilai_berubah)} dari {I(ms.nilai_pipeline)} nilai ({P(ms.persen_nilai_berubah, 1)}) di {I(ms.file_terdampak)} file; rata-rata nilai yang berubah {D(mean_mac, 2)} g di macro vs {D(mean_pipe, 0)} g di pipeline. "
         f"Penyebabnya file berformat titik desimal yang dibaca sebagai ribuan. Macro tiruan juga gagal membaca {I(ms.file_macro_gagal_format_baru)} file format baru, membaca {I(ms.file_salinan_terbaca_dua_kali)} salinan dua kali, dan membaca {I(ms.file_terpotong_terbaca_sebagian)} file terpotong sebagian. Workbook asli tidak tersedia, jadi angka ini bergantung pada tiruan macro."),
     3: (f"Tidak sama. Pada {I(msc.loc['mean', 'sesi'])} sesi, {I(msc.loc['mean', 'sesi_beda'])} sesi ({P(msc.loc['mean', 'persen'], 1)}) punya rata-rata, Min, dan Max berbeda (selisih rata-rata terbesar {D(msc.loc['mean', 'selisih_abs_maks'], 0)} g). "
         f"Per model dan kondisi, Cpk macro lebih rendah {D(d_cpk.min(), 2)} sampai {D(d_cpk.max(), 2)} dan Min turun hingga {D(d_min.abs().max(), 0)} g (Tabel 2.2c). Rekonsiliasi memakai macro tiruan karena workbook lama tidak ada (asumsi)."),
-    4: (f"Cpk semua kombinasi di atas 1,33 (target): terendah {gname(low)} {D(low.cpk, 2)} (CI {D(cpkmin_ci[0], 2)} sampai {D(cpkmin_ci[1], 2)}), tertinggi {gname(high)} {D(high.cpk, 2)}. Tidak ada kombinasi di bawah 1,33, berbeda dengan rancangan. "
+    4: (f"{I(n_below)} dari {I(len(cpk))} kombinasi di bawah 1,33 (target): terendah {gname(low)} {D(low.cpk, 2)} (CI {D(cpkmin_ci[0], 2)} sampai {D(cpkmin_ci[1], 2)}), tertinggi {gname(high)} {D(high.cpk, 2)}; kombinasi lain di atas 1,33. Variasi besar pada satu kombinasi memang ditanam (rancangan fakta 1). "
         f"Cpk dihitung dari hasil ukur valid digabung per kelompok (asumsi), n antara {I(cpk.n.min())} dan {I(cpk.n.max())}, cukup besar. Spesifikasi lebar ({I(LSL)} sampai {I(USL)} g) membuat Cpk ditentukan batas bawah."),
-    5: (f"Tidak ada hasil ukur di luar spesifikasi pada keempat kombinasi (0 dari {I(cpk.n.sum())} hasil ukur). Batas atas CI Wilson per kombinasi {P(cpk.oos_ci_high.min(), 2)} sampai {P(cpk.oos_ci_high.max(), 2)}. Bukan bukti nol mutlak. "
-        f"Nilai tidak wajar (0, negatif, di atas kapasitas) tidak ditanam generator: {I(nonvalid)} baris tidak valid; aturan penolakannya hanya diuji dengan pytest."),
+    5: (f"{I(cpk.oos_n.sum())} dari {I(cpk.n.sum())} hasil ukur valid di luar spesifikasi, seluruhnya pada {gname(low)} ({I(low.oos_n)} dari {I(low.n)}, CI Wilson {P(low.oos_ci_low, 2)} sampai {P(low.oos_ci_high, 2)}); kombinasi lain nol (batas atas CI {P(cpk[cpk.oos_n == 0].oos_ci_high.min(), 2)} sampai {P(cpk[cpk.oos_n == 0].oos_ci_high.max(), 2)}, bukan bukti nol mutlak). "
+        f"Nilai tidak wajar (0, negatif, di atas kapasitas {I(C.CAPACITY_G)} g) ditanam {I(inv_pl)} baris dan {I(nonvalid)} terdeteksi ({P(f5.nilai2, 1)} hasil ukur file dimuat); baris itu ditandai tidak valid dan tidak masuk Cpk atau out-of-spec."),
     6: (f"Mesin berbeda: PT-02 lebih rendah {D(abs(smt.loc['machine_id', 'selisih_rata_g']), 0)} g dari PT-01 pada rata-rata sesi (Mann-Whitney p {pv(p_mach)}, p Holm {pv(ph_mach)}), terutama karena pergeseran PT-02 (Q7). "
         f"Shift berbeda kecil: Shift 2 lebih tinggi {D(smt.loc['shift', 'selisih_rata_g'], 0)} g (p {pv(p_shift)}, p Holm {pv(ph_shift)}); signifikan secara statistik tetapi selisihnya kecil terhadap sebaran. Mesin dan shift tidak dipisah dari waktu, jadi perancu belum dikendalikan."),
-    7: (f"Rata-rata mingguan gabungan stabil sekitar {I(wa.mean_g.mean())} g dan Cpk mingguan antara {D(wa.cpk.min(), 2)} dan {D(wa.cpk.max(), 2)} ({I(len(wk_list))} minggu). Pergeseran ada di mesin PT-02: titik ubah {cp.loc['PT-02', 'tanggal_titik_ubah']}, rata-rata turun {D(abs(cp.loc['PT-02', 'selisih_g']), 0)} g ({P(abs(cp.loc['PT-02', 'persen_dari_rata']), 1)}), p permutasi {pv(cp.loc['PT-02', 'p_permutasi'])}. "
-       f"PT-01 tidak punya titik ubah (p {pv(cp.loc['PT-01', 'p_permutasi'])}). Pergeseran bertahan sampai akhir data, tidak hanya sekitar 1 minggu."),
-    8: (f"Pergeseran PT-02 mulai {cp.loc['PT-02', 'tanggal_titik_ubah']} dan tidak muncul di PT-01. Data tidak memuat catatan kalibrasi atau lot lem, sehingga penyebabnya tidak dapat dipastikan dari data; pada simulasi pergeseran ditanam sebagai kalibrasi mesin. Pergeseran belum tentu sebab kalibrasi dan perlu dicek di lapangan."),
+    7: (f"Rata-rata mingguan gabungan stabil sekitar {I(wa.mean_g.mean())} g dan Cpk mingguan antara {D(wa.cpk.min(), 2)} dan {D(wa.cpk.max(), 2)} ({I(len(wk_list))} minggu). Penurunan ada di mesin PT-02: jendela {cp.loc['PT-02', 'tanggal_mulai']} sampai {cp.loc['PT-02', 'tanggal_selesai']}, rata-rata turun {D(abs(cp.loc['PT-02', 'selisih_g']), 0)} g ({P(abs(cp.loc['PT-02', 'persen_dari_rata']), 1)}), p permutasi {pv(cp.loc['PT-02', 'p_permutasi'])}. "
+       f"PT-01 tidak punya jendela penurunan (p {pv(cp.loc['PT-01', 'p_permutasi'])}). Jendela {I(C_WIN)} hari adalah asumsi (rancangan: sekitar 1 minggu); jendela {I(sens.panjang_jendela_hari.min())} dan {I(sens.panjang_jendela_hari.max())} hari memberi selisih {D(sens[(sens.machine_id == 'PT-02') & (sens.panjang_jendela_hari == sens.panjang_jendela_hari.min())].selisih_g.iloc[0], 0)} dan {D(sens[(sens.machine_id == 'PT-02') & (sens.panjang_jendela_hari == sens.panjang_jendela_hari.max())].selisih_g.iloc[0], 0)} g (Tabel 2.4f)."),
+    8: (f"Penurunan PT-02 terjadi {cp.loc['PT-02', 'tanggal_mulai']} sampai {cp.loc['PT-02', 'tanggal_selesai']} dan tidak muncul di PT-01. Data tidak memuat catatan kalibrasi atau lot lem, sehingga penyebabnya tidak dapat dipastikan dari data; pada simulasi pergeseran ditanam sebagai kalibrasi mesin. Pergeseran belum tentu sebab kalibrasi dan perlu dicek di lapangan."),
     9: (f"Asumsi dasar {I(imp5.menit_per_file)} menit manual per file (salin dengan macro dan copy-paste), dibanding pipeline otomatis. Untuk {I(imp5.file_dimuat_periode)} file pada periode data, penghematan {D(imp5.jam_hemat_periode, 1)} jam. Menit per file tidak diukur; sensitivitas {I(imp3.menit_per_file)} dan {I(imp10.menit_per_file)} menit di Tabel 2.4a."),
     10: (f"Sekitar {D(imp5.jam_hemat_per_tahun, 0)} jam per tahun (estimated): {I(imp5.file_per_tahun)} file per tahun x {I(imp5.menit_per_file)} menit / 60. Sensitivitas: {D(imp3.jam_hemat_per_tahun, 0)} jam pada {I(imp3.menit_per_file)} menit dan {D(imp10.jam_hemat_per_tahun, 0)} jam pada {I(imp10.menit_per_file)} menit. Volume tahunan diekstrapolasi dari periode data (asumsi)."),
     11: (f"Semua kategori file rusak yang ditanam tertangkap: {I(gt_det)} dari {I(gt_tot)} pemeriksaan kategori (Tabel 2.5a); {I(gtn.file_normal_salah_karantina)} dari {I(gtn.file_normal)} file normal salah dikarantina. {I(gtn.file_dikarantina)} file rusak masuk karantina dan {I(gtn.file_rusak_lolos_dimuat)} lolos dimuat. "
-         f"Kategori ini hanya dari yang ditanam generator; nilai tidak wajar tidak ada di data sehingga hanya diuji lewat pytest ({I(n_py_ok)} dari {I(n_py)} lulus). Rancangan juga menyebut file kosong dan kolom hilang; tidak ditanam."),
+         f"Nilai tidak wajar: {I(nonvalid)} dari {I(inv_pl)} yang ditanam terdeteksi. Kategori hanya dari yang ditanam generator; aturan juga diuji pytest ({I(n_py_ok)} dari {I(n_py)} lulus)."),
     12: (f"Ya. Pipeline dijalankan dua kali: percobaan kedua memuat {I(a2.loaded)} file dan melewati {I(a2.skipped)}; baris test_run tetap {I(idem.loc['test_run', 'setelah_percobaan_2'])} (tambahan {I(idem.loc['test_run', 'tambahan'])}) dan measurement tetap {I(idem.loc['measurement', 'setelah_percobaan_2'])} (tambahan {I(idem.loc['measurement', 'tambahan'])}). "
          f"{I(d_dup)} salinan dalam folder yang sama juga dilewati lewat hash isi."),
 }
@@ -160,7 +164,7 @@ def block(qs):
 n_main = sum(1 for q in QS if q[2] == "Utama"); n_sup = sum(1 for q in QS if q[2] == "Pendukung"); n_add = sum(1 for q in QS if q[2] == "Tambahan")
 sec2 = []
 sec2.append(f'<div class="card"><h3>Jawaban singkat</h3><p>Semua {I(n_ans)} pertanyaan terjawab dengan angka dari data ({I(n_main)} Utama, {I(n_sup)} Pendukung, {I(n_add)} Tambahan). {I(len(WARN))} pertanyaan diberi catatan kuning '
-            f'(asumsi definisi, macro tiruan, estimasi, atau fakta rancangan yang tidak ditanam). Pertanyaan utama project dijawab di bagian 7. Rancangan tidak memuat hipotesis formal; lima fakta data diuji di bagian 3.</p>'
+            f'(asumsi definisi, macro tiruan, atau estimasi). Pertanyaan utama project dijawab di bagian 7. Rancangan tidak memuat hipotesis formal; lima fakta data diuji di bagian 3.</p>'
             f'<p class="how">Klik nomor pertanyaan untuk melompat. Q hijau = terjawab. Q kuning = terjawab dengan catatan.</p><div class="qchips">' + "".join(qchip(n, t) for n, t, _ in QS) + '</div></div>')
 sec2.append('<h3>2.1 Pemuatan file dan penyebab kegagalan</h3><div class="card"><p>Grafik 2.1a: jumlah file per status pemuatan, percobaan pertama.</p>' + chart_status
             + '<p>Tabel 2.1b: status file menurut penyebab.</p>'
@@ -187,14 +191,16 @@ sec2.append('<h3>2.3 Cpk dan out-of-spec</h3><div class="card"><p>Grafik 2.3a: C
             + table(["Kelompok", "Di luar spesifikasi", "Persen", "Batas atas CI 95%", "Batas atas (aturan tiga)", "Jarak rata-rata ke LSL (simpangan baku)"],
                     [[gname(r), I(r.oos_n), P(r.oos_rate, 2), P(r.oos_ci_high, 2), P(r.batas_atas_aturan_tiga, 2), D(r.jarak_ke_lsl_sd, 1)] for r in cpk.itertuples()]) + '</div>')
 sec2.append(block([4, 5]))
-sec2.append('<h3>2.4 Shift, mesin, tren mingguan, dan waktu</h3><div class="card"><p>Grafik 2.4a: rata-rata kekuatan rekat per minggu per mesin (latar kuning = minggu setelah titik ubah PT-02).</p>' + chart_wk + legend([(GREY, "PT-01"), (BLUE, "PT-02")])
+sec2.append('<h3>2.4 Shift, mesin, tren mingguan, dan waktu</h3><div class="card"><p>Grafik 2.4a: rata-rata kekuatan rekat per minggu per mesin (latar kuning = minggu jendela penurunan PT-02).</p>' + chart_wk + legend([(GREY, "PT-01"), (BLUE, "PT-02")])
             + '<p>Grafik 2.4b: Cpk gabungan per minggu.</p>' + chart_cpkw
             + '<p>Tabel 2.4c: perbandingan shift dan mesin (rata-rata sesi dikurangi rata-rata model x kondisi, Mann-Whitney, Holm atas dua uji).</p>'
             + table(["Faktor", "Kelompok A", "Kelompok B", "Sesi A", "Sesi B", "Selisih rata-rata (g)", "p", "p Holm"],
                     [[f, r.kelompok_a, r.kelompok_b, I(r.sesi_a), I(r.sesi_b), D(r.selisih_rata_g, 0), pv(r.p_mannwhitney), pv(h)] for (f, r), h in zip(smt.iterrows(), (ph_shift, ph_mach))])
-            + '<p>Tabel 2.4d: titik ubah per mesin (pindai data, uji permutasi).</p>'
-            + table(["Mesin", "Sesi", "Tanggal titik ubah", "Rata-rata sebelum (selisih ke model)", "Rata-rata sesudah", "Selisih (g)", "Persen", "p permutasi"],
-                    [[m, I(r.sesi), r.tanggal_titik_ubah, D(r.rata_sebelum_resid, 0), D(r.rata_sesudah_resid, 0), D(r.selisih_g, 0), P(r.persen_dari_rata, 1), pv(r.p_permutasi)] for m, r in cp.iterrows()])
+            + '<p>Tabel 2.4d: jendela penurunan per mesin (pindai jendela 7 hari, uji permutasi; panjang jendela adalah asumsi).</p>'
+            + table(["Mesin", "Sesi", "Mulai", "Selesai", "Rata-rata di luar jendela (selisih ke model)", "Rata-rata di jendela", "Selisih (g)", "Persen", "p permutasi"],
+                    [[m, I(r.sesi), r.tanggal_mulai, r.tanggal_selesai, D(r.rata_luar_resid, 0), D(r.rata_jendela_resid, 0), D(r.selisih_g, 0), P(r.persen_dari_rata, 1), pv(r.p_permutasi)] for m, r in cp.iterrows()])
+            + '<p>Tabel 2.4f: sensitivitas panjang jendela penurunan (5, 7, 10 hari).</p>'
+            + table(["Mesin", "Jendela (hari)", "Mulai", "Selesai", "Selisih (g)", "p permutasi"], [[r.machine_id, I(r.panjang_jendela_hari), r.tanggal_mulai, r.tanggal_selesai, D(r.selisih_g, 0), pv(r.p_permutasi)] for r in sens.itertuples()])
             + '<p>Tabel 2.4e: estimasi waktu yang dihemat (estimated; menit per file adalah asumsi).</p>'
             + table(["Menit per file", "File per tahun", "Jam hemat pada periode data", "Jam hemat per tahun", "Label"], [[I(r.menit_per_file), I(r.file_per_tahun), D(r.jam_hemat_periode, 1), D(r.jam_hemat_per_tahun, 0), r.label] for r in imp.itertuples()]) + '</div>')
 sec2.append(block([6, 7, 8, 9, 10]))
@@ -203,8 +209,8 @@ sec2.append('<h3>2.5 Validasi: ground truth, idempoten, dan uji</h3><div class="
             + '<p>Tabel 2.5b: file normal dan file rusak.</p>'
             + table(["File normal", "Dimuat", "Salah karantina", "File rusak ditanam", "Rusak lolos dimuat", "Dikarantina"], [[I(gtn.file_normal), I(gtn.file_normal_dimuat), I(gtn.file_normal_salah_karantina), I(gtn.file_rusak_ditanam), I(gtn.file_rusak_lolos_dimuat), I(gtn.file_dikarantina)]])
             + '<p>Tabel 2.5c: pergeseran PT-02, ditanam vs terdeteksi.</p>'
-            + table(["Mesin", "Tanggal ditanam", "Persen ditanam", "Tanggal terdeteksi", "Persen terdeteksi", "p permutasi", "Mesin lain", "p mesin lain"],
-                    [[gts.mesin_tertanam, gts.tanggal_tertanam, P(gts.persen_tertanam, 1), gts.tanggal_terdeteksi, P(gts.persen_terdeteksi, 1), pv(gts.p_permutasi), gts.mesin_lain, pv(gts.p_permutasi_mesin_lain)]])
+            + table(["Mesin", "Ditanam mulai", "Ditanam selesai", "Selisih ditanam (g)", "Terdeteksi mulai", "Terdeteksi selesai", "Selisih terdeteksi (g)", "p permutasi", "Mesin lain", "p mesin lain"],
+                    [[gts.mesin_tertanam, gts.tanggal_tertanam, gts.tanggal_tertanam_selesai, D(gts.selisih_tertanam_g, 0), gts.tanggal_terdeteksi, gts.tanggal_terdeteksi_selesai, D(gts.selisih_terdeteksi_g, 0), pv(gts.p_permutasi), gts.mesin_lain, pv(gts.p_permutasi_mesin_lain)]])
             + '<p>Tabel 2.5d: uji idempoten, jumlah baris setelah dua kali pemuatan.</p>'
             + table(["Tabel", "Setelah percobaan 1", "Setelah percobaan 2", "Tambahan"], [[t, I(r.setelah_percobaan_1), I(r.setelah_percobaan_2), I(r.tambahan)] for t, r in idem.iterrows()])
             + '<p>Tabel 2.5e: uji pytest parser.</p>' + table(["Tes", "Hasil"], [[r.tes, pill("lulus") if r.hasil == "lulus" else pill(r.hasil, "d")] for r in pyt.itertuples()])
@@ -224,7 +230,7 @@ REP.append('<h3>1.1 Data mentah</h3><div class="card"><p>Tabel 1.1a: lima sesi u
            + '<p>Tabel 1.1b: format file mesin (data simulasi).</p>' + table(["Ciri", "Isi"], [["Pemisah kolom", "titik koma"], ["Header", "sembilan baris keterangan mesin"], ["Format angka", f"titik ribuan dan koma desimal; {I(fct.loc[3, 'nilai2'])} file berformat titik desimal"],
                                                                                           ["Format mesin baru", f"{I(q_fmt)} file dengan header berbeda"], ["File terpotong", f"{I(q_trunc)} file tidak berakhir baris baru"]]) + '</div>')
 FILES = {
-    "changepoint.csv": "titik ubah rata-rata per mesin", "cpk_group.csv": "Cpk dan out-of-spec per model dan kondisi", "crosscheck.csv": "cek silang SQL, pandas, Excel", "design_facts.csv": "lima fakta data rancangan terhadap hasil",
+    "changepoint.csv": "jendela penurunan rata-rata per mesin", "dip_sensitivity.csv": "sensitivitas panjang jendela penurunan", "cpk_group.csv": "Cpk dan out-of-spec per model dan kondisi", "crosscheck.csv": "cek silang SQL, pandas, Excel", "design_facts.csv": "lima fakta data rancangan terhadap hasil",
     "ground_truth_files.csv": "file rusak ditanam vs terdeteksi", "ground_truth_normal.csv": "file normal dan rusak", "ground_truth_shift.csv": "pergeseran ditanam vs terdeteksi", "idempotency.csv": "uji pemuatan dua kali",
     "impact.csv": "estimasi jam dihemat (estimated)", "kpi_group.csv": "KPI per model dan kondisi", "kpi_machine_shift.csv": "KPI per mesin dan shift", "kpi_run.csv": "KPI per sesi uji", "kpi_weekly.csv": "KPI per minggu dan mesin",
     "macro_group_compare.csv": "pipeline vs macro per kelompok", "macro_session_compare.csv": "pipeline vs macro per sesi", "macro_summary.csv": "ringkasan selisih macro tiruan", "pytest_result.csv": "hasil pytest parser",
@@ -241,7 +247,7 @@ REP.append('<h3>1.3 Angka kunci (KPI)</h3><div class="card"><p>Tabel 1.3: lima K
                ["Parse success rate", "file dimuat / file unik", P(a1.loaded / uniq, 1), f"{I(uniq)} file"],
                ["Cpk terendah", "min((USL - rata-rata), (rata-rata - LSL)) / (3 x simpangan baku)", f"{D(low.cpk, 2)} ({gname(low)})", f"{I(low.n)} hasil ukur"],
                ["Out-of-spec rate", "hasil ukur di luar 1.500 sampai 19.000 g / hasil ukur", P(cpk.oos_n.sum() / cpk.n.sum(), 2), f"{I(cpk.n.sum())} hasil ukur"],
-               ["Pergeseran rata-rata PT-02", "rata-rata sesudah dikurangi sebelum titik ubah", f"{D(cp.loc['PT-02', 'selisih_g'], 0)} g ({P(cp.loc['PT-02', 'persen_dari_rata'], 1)})", f"{I(cp.loc['PT-02', 'sesi'])} sesi"],
+               ["Pergeseran rata-rata PT-02", "rata-rata di jendela dikurangi di luar jendela", f"{D(cp.loc['PT-02', 'selisih_g'], 0)} g ({P(cp.loc['PT-02', 'persen_dari_rata'], 1)})", f"{I(cp.loc['PT-02', 'sesi'])} sesi"],
                ["Menit manual per file", "asumsi, bukan pengukuran", f"{I(imp5.menit_per_file)} menit (estimated)", f"{I(imp5.file_dimuat_periode)} file"]]) + '</div>')
 REP.append('<h2 id="rp2">2. Apakah business question terjawab?<small>' + f'{I(n_ans)} pertanyaan pada Design Project, dijawab dengan data' + '</small></h2>')
 REP.extend(sec2)
@@ -255,11 +261,11 @@ REP.append('<div class="card"><p class="how">Tabel 3a. Rancangan dan realisasi d
                ["Sumber data", "simulasi buatan sendiri dari scripts/generate_csv.py", f"00_generate_csv.py (seed tetap), dibuat ulang dan dicocokkan dengan sidik jari repo DataCenter ({I(n_fp_ok)} dari {I(n_fp)} berkas)", pill("Sesuai", "")],
                ["Ukuran", "±1.200 file, ±15.000 hasil ukur", f"{I(uniq)} file unik ditambah {I(d_dup)} salinan; {I(meas)} hasil ukur dimuat dari {I(runs)} file", pill("Sesuai", "")],
                ["Tabel", "test_run, measurement, spec, ingest_log", "empat tabel yang sama di DuckDB; kolom test_type tidak ada (jenis uji shear tidak ada di data)", pill("Sesuai + penyesuaian", "p")],
-               ["Fakta 1: satu kombinasi dengan Cpk di bawah 1,33", "Cpk < 1,33", f"Cpk terendah {D(f1.nilai, 2)}; tidak ada kombinasi di bawah 1,33; variasi tidak ditanam sebesar itu", pill("Berubah", "d")],
-               ["Fakta 2: rata-rata satu mesin turun ±800 g selama ±1 minggu", "turun ±800 g, ±1 minggu", f"PT-02 turun {D(abs(f2.nilai), 0)} g ({P(abs(cp.loc['PT-02', 'persen_dari_rata']), 1)}) dan bertahan sampai akhir data; tanggal titik ubah terdeteksi sama dengan yang ditanam", pill("Sebagian", "p")],
+               ["Fakta 1: satu kombinasi dengan Cpk di bawah 1,33", "Cpk < 1,33", f"{f1.kombinasi} Cpk {D(f1.nilai, 2)}, satu-satunya kombinasi di bawah 1,33 ({I(f1.nilai2)} kombinasi)", pill("Sesuai", "")],
+               ["Fakta 2: rata-rata satu mesin turun ±800 g selama ±1 minggu", "turun ±800 g, ±1 minggu", f"PT-02 turun {D(abs(f2.nilai), 0)} g ({P(abs(cp.loc['PT-02', 'persen_dari_rata']), 1)}) pada {cp.loc['PT-02', 'tanggal_mulai']} sampai {cp.loc['PT-02', 'tanggal_selesai']}; tanggal mulai terdeteksi sama dengan yang ditanam", pill("Sesuai", "")],
                ["Fakta 3: ±3% file berformat titik ribuan dan koma desimal", "±3% file", f"{I(f3.nilai2)} file ({P(f3.nilai, 1)}) berformat angka lain, semuanya terbaca benar oleh pipeline", pill("Sesuai", "")],
-               ["Fakta 4: file bermasalah (header berbeda, kolom hilang, file kosong, file ganda)", "empat jenis", f"header berbeda (format mesin baru) {I(gtd.loc['format mesin baru', 'ditanam'])}, file terpotong {I(gtd.loc['file terpotong (bukan format baru)', 'ditanam'])}, salinan {I(gtd.loc['salinan ganda (nama copy_of_)', 'ditanam'])}; file kosong dan kolom hilang tidak ditanam", pill("Sebagian", "p")],
-               ["Fakta 5: 2% sampai 3% nilai tidak wajar", "0, negatif, di atas kapasitas", f"{I(f5.nilai)} baris tidak valid di data; tidak ditanam", pill("Berubah", "d")],
+               ["Fakta 4: file bermasalah (header berbeda, kolom hilang, file kosong, file ganda)", "empat jenis", f"header berbeda (format mesin baru) {I(gtd.loc['format mesin baru', 'ditanam'])}, kolom hilang {I(gtd.loc['kolom hilang (tanpa kolom Force)', 'ditanam'])}, file kosong {I(gtd.loc['file kosong', 'ditanam'])}, salinan {I(gtd.loc['salinan ganda (nama copy_of_)', 'ditanam'])}, terpotong {I(gtd.loc['file terpotong (bukan format baru)', 'ditanam'])}", pill("Sesuai", "")],
+               ["Fakta 5: 2% sampai 3% nilai tidak wajar", "0, negatif, di atas kapasitas", f"{I(inv_pl)} baris ditanam, {I(f5.nilai)} terdeteksi tidak valid ({P(f5.nilai2, 1)} hasil ukur file dimuat)", pill("Sesuai", "")],
                ["Jenis uji", "push dan shear", "hanya push test", pill("Berubah", "d")],
                ["Hipotesis", "tidak ada hipotesis formal pada rancangan", "lima fakta data di atas diperlakukan sebagai klaim yang diuji", pill("Tidak berlaku", "d")]]) + '</div>')
 
@@ -297,9 +303,9 @@ REP.append('<div class="card"><p class="how">Tabel 5a. Dua belas langkah rancang
                ["Macro lama ditiru", "workbook dan macro asli tidak tersedia; tiruan ditulis di docs/old_process.md dan angka rekonsiliasi bergantung padanya (asumsi)"],
                ["Aturan file terpotong, kapasitas mesin, aturan baca angka", "tidak ada di rancangan; asumsi di docs/definitions.md"],
                ["Menit manual per file dan volume tahunan", "tidak ada di rancangan; 5 menit dengan sensitivitas 3 dan 10 menit, hasil berlabel estimated"],
-               ["Titik ubah dari data", "pergeseran dicari lewat pindai dan uji permutasi, tanggal tertanam hanya dibandingkan di skrip validasi"],
+               ["Jendela penurunan dari data", "penurunan dicari lewat pindai jendela dan uji permutasi, tanggal tertanam hanya dibandingkan di skrip validasi"],
                ["Hash isi untuk file ganda", "satu mekanisme untuk salinan dalam folder yang sama dan pemuatan ulang"],
-               ["Nilai tidak wajar diuji dengan pytest", "generator tidak menanam nilai tidak wajar; aturan penolakan tetap perlu diuji"]])
+               ["Pindai jendela penurunan 7 hari", "rancangan menyebut sekitar 1 minggu; panjang jendela asumsi dengan sensitivitas 5 dan 10 hari (dip_sensitivity.csv)"]])
            + '<p>Tabel 5c: perubahan nama dan lokasi file terhadap rancangan.</p>' + table(["Rancangan", "Realisasi"], rn_rows) + '</div>')
 docs_list = [(a, d[0] if d else "", c) for a, d, c in RENAMES if a != "index.html"]
 
@@ -335,15 +341,15 @@ REP.append('<h2 id="rp7">7. Kesimpulan<small>Hasil analisis, Impact, success cri
 REP.append('<h4>7.1 Hasil analisis</h4><div class="card"><p><b>Pertanyaan utama:</b> bagaimana mengganti macro VBA dan copy-paste manual agar data CSV mesin push test otomatis masuk database, terbaca dengan benar, dan siap dianalisis per model dan kondisi proses?</p>'
            f'<p>Pipeline memuat {I(a1.loaded)} dari {I(uniq)} file unik ({P(a1.loaded / uniq, 1)}), mengarantina {I(a1.quarantined)} file rusak dengan alasan, dan tidak menambah baris saat dijalankan ulang. '
            f'Macro lama (tiruan) salah membaca {I(ms.nilai_berubah)} nilai ({P(ms.persen_nilai_berubah, 1)}) sehingga Cpk terlihat {D(d_cpk.min(), 2)} sampai {D(d_cpk.max(), 2)} lebih rendah. '
-           f'Cpk keempat kombinasi di atas 1,33 (terendah {gname(low)} {D(low.cpk, 2)}) dan tidak ada hasil ukur di luar spesifikasi. Rata-rata mesin PT-02 bergeser turun {D(abs(cp.loc["PT-02", "selisih_g"]), 0)} g mulai {cp.loc["PT-02", "tanggal_titik_ubah"]} dan terdeteksi di tanggal yang ditanam. '
+           f'Cpk {gname(low)} {D(low.cpk, 2)} di bawah 1,33 (kombinasi lain di atas) dengan {I(low.oos_n)} hasil ukur di luar spesifikasi. Rata-rata mesin PT-02 turun {D(abs(cp.loc["PT-02", "selisih_g"]), 0)} g pada {cp.loc["PT-02", "tanggal_mulai"]} sampai {cp.loc["PT-02", "tanggal_selesai"]} dan terdeteksi di tanggal yang ditanam. '
            f'Semua {I(gt_det)} kategori file rusak yang ditanam tertangkap, tanpa file normal salah karantina.</p></div>')
 REP.append('<h4>7.2 Impact</h4><div class="card">' f'<p>Estimasi (estimated): sekitar {D(imp5.jam_hemat_per_tahun, 0)} jam kerja manual per tahun ({I(imp5.menit_per_file)} menit per file x {I(imp5.file_per_tahun)} file per tahun), dengan rentang {D(imp3.jam_hemat_per_tahun, 0)} sampai {D(imp10.jam_hemat_per_tahun, 0)} jam untuk {I(imp3.menit_per_file)} sampai {I(imp10.menit_per_file)} menit per file. '
            'Menit per file adalah asumsi, bukan pengukuran.</p><p>Nilai praktis: angka tidak lagi salah baca dan file rusak tidak masuk diam-diam. Nilai analitis: Cpk dan tren per model, kondisi, dan mesin dari satu sumber SQL. Nilai portofolio: pipeline dengan karantina, idempoten, dan uji ground truth. Belum terukur: dampak nyata di lini dan dalam rupiah.</p></div>')
 REP.append('<h4>7.3 Success criteria</h4><div class="card">' + table(["Kriteria", "Status", "Bukti"], [[k, pill(s, "" if s == "Terpenuhi" else ("p" if s in ("Sebagian", "Belum diuji") else "d")), cs(b)] for k, s, b in crit]) + f'<p>Hasil: {I(n_ok_crit)} dari {I(len(crit))} kriteria tercapai.</p></div>')
 REP.append('<h4>7.4 Rekomendasi</h4><div class="card"><ul class="tight">'
            '<li>Jalankan pipeline terjadwal dan tinjau folder karantina setiap hari; format mesin baru ditambahkan sebagai aturan sebelum file dimuat ulang.</li>'
-           f'<li>Selidiki kalibrasi mesin PT-02: rata-rata turun {D(abs(cp.loc["PT-02", "selisih_g"]), 0)} g sejak {cp.loc["PT-02", "tanggal_titik_ubah"]}.</li>'
-           '<li>Pantau jarak rata-rata ke LSL (dalam simpangan baku) selain Cpk, karena spesifikasi lebar membuat Cpk selalu tinggi.</li>'
+           f'<li>Selidiki kalibrasi mesin PT-02: rata-rata turun {D(abs(cp.loc["PT-02", "selisih_g"]), 0)} g pada {cp.loc["PT-02", "tanggal_mulai"]} sampai {cp.loc["PT-02", "tanggal_selesai"]}.</li>'
+           f'<li>Turunkan variasi {gname(low)} (Cpk di bawah 1,33) dan pantau jarak rata-rata ke LSL (dalam simpangan baku) selain Cpk.</li>'
            '<li>Hentikan macro lama setelah pipeline diverifikasi pada data nyata.</li></ul></div>')
 REP.append('<h4>7.5 Saran perbaikan</h4><div class="card"><ul class="tight">'
            '<li>Deploy dashboard dan uji ke pembaca awam (kriteria 1 menit).</li><li>Uji pipeline pada file mesin nyata untuk memeriksa format angka dan jenis kerusakan yang tidak ada di simulasi.</li>'
@@ -352,7 +358,7 @@ REP.append('<h4>7.6 Batasan</h4><div class="card"><ul class="tight">'
            f'<li><b>Data adalah simulasi;</b> angka menggambarkan simulasi, bukan lini produksi. Semua {I(gt_det)} kategori file rusak yang ditanam terdeteksi, tetapi hanya untuk kategori yang ditanam generator.</li>'
            '<li>Macro lama ditiru dari deskripsi rancangan; workbook asli tidak tersedia, sehingga rekonsiliasi (Q2, Q3) bergantung pada tiruan itu.</li>'
            f'<li>Asumsi buatan sendiri: aturan file terpotong, kapasitas mesin, aturan baca angka, Cpk per kelompok gabungan, {I(imp5.menit_per_file)} menit per file, volume tahunan, uji shear dan mesin pada rata-rata sesi.</li>'
-           f'<li>Fakta data rancangan hanya sebagian ditanam: tidak ada Cpk di bawah 1,33, tidak ada nilai tidak wajar, tidak ada file kosong atau kolom hilang, tidak ada jenis uji shear; pergeseran mesin permanen, bukan sekitar 1 minggu.</li>'
+           f'<li>Kelima fakta data rancangan ditanam dan terdeteksi, kecuali jenis uji shear yang tidak ada di data. Generator, jenis kerusakan, dan jendela penurunan 7 hari ditulis oleh orang yang sama dengan pipeline, jadi uji pemulihan optimistis.</li>'
            f'<li>Perbedaan shift kecil tetapi signifikan (p Holm {pv(ph_shift)}); mesin dan shift tidak dipisah dari waktu. Penyebab pergeseran PT-02 tidak bisa dipastikan dari data.</li>'
            f'<li>Dashboard belum di-deploy; kriteria pembaca awam belum diuji; slide dan file contoh di data/samples tidak dibuat; branch belum di-merge ke main.</li>'
            '<li>Rumus Excel dihitung ulang LibreOffice, bukan Excel. Lisensi data tidak berlaku (data karangan).</li></ul></div>')
@@ -363,7 +369,7 @@ REPORT_PANE = ('<div class="pane" id="report" data-tab="report" hidden>\n<div cl
                    [f'<span class="en">{i}</span>', f'<a href="#rp{i}">{t}</a>', pill(v[0], v[1]), v[2]] for i, (t, v) in enumerate([
                        ("Data yang berhasil didapatkan", ("Berhasil", "", f"{I(a1.loaded)} dari {I(uniq)} file dimuat, {I(meas)} hasil ukur")),
                        ("Apakah business question terjawab?", ("Sesuai", "", f"{I(n_ans)} dari {I(n_ans)} terjawab, {I(len(WARN))} dengan catatan")),
-                       ("Apakah dataset sesuai dengan Design Project?", ("Sebagian", "p", "tiga dari lima fakta data tidak atau hanya sebagian ditanam")),
+                       ("Apakah dataset sesuai dengan Design Project?", ("Sesuai + penyesuaian", "p", "lima fakta data ditanam dan terdeteksi; jenis uji shear tidak ada")),
                        ("Apakah tools yang digunakan sesuai?", ("Sesuai + penyesuaian", "p", "macro ditiru, dashboard belum di-deploy")),
                        ("Apakah alur pengerjaan sesuai dengan Design Project?", ("Sesuai + tambahan", "", "dua belas langkah dijalankan")),
                        ("Apakah project output tercapai?", ("Sebagian", "p", "dashboard belum di-deploy, slide tidak dibuat")),

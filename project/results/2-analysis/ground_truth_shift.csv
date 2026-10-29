@@ -1,2 +1,2 @@
-mesin_tertanam,tanggal_tertanam,persen_tertanam,tanggal_terdeteksi,persen_terdeteksi,p_permutasi,mesin_lain,p_permutasi_mesin_lain
-PT-02,2026-05-23,-0.08,2026-05-23,-0.08348595162,0.003322259136,PT-01,0.903654485
+mesin_tertanam,tanggal_tertanam,tanggal_tertanam_selesai,selisih_tertanam_g,tanggal_terdeteksi,tanggal_terdeteksi_selesai,selisih_terdeteksi_g,persen_terdeteksi,p_permutasi,mesin_lain,p_permutasi_mesin_lain
+PT-02,2026-05-23,2026-05-29,-800,2026-05-23,2026-05-29,-807.8941534,-0.105500659,0.000999000999,PT-01,0.1548451548

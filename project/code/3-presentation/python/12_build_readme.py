@@ -8,7 +8,7 @@ import common as CM
 
 R1, R2, R3 = CM.RES1, CM.RES2, CM.RES3
 att = pd.read_csv(R1 / "ingest_attempts.csv"); cp = pd.read_csv(R2 / "cpk_group.csv"); imp = pd.read_csv(R2 / "impact.csv"); imp = imp[imp.dasar == 1].iloc[0]
-ms = pd.read_csv(R2 / "macro_summary.csv").iloc[0]; cx = pd.read_csv(R2 / "crosscheck.csv"); dt = pd.read_csv(R3 / "dashboard_test.csv"); pt = pd.read_csv(R2 / "pytest_result.csv")
+n_below = int(cp.di_bawah_cpk_target.sum()); ms = pd.read_csv(R2 / "macro_summary.csv").iloc[0]; cx = pd.read_csv(R2 / "crosscheck.csv"); dt = pd.read_csv(R3 / "dashboard_test.csv"); pt = pd.read_csv(R2 / "pytest_result.csv")
 gs = pd.read_csv(R2 / "ground_truth_shift.csv").iloc[0]; gf = pd.read_csv(R2 / "ground_truth_files.csv"); idem = pd.read_csv(R2 / "idempotency.csv").set_index("tabel"); db = pd.read_csv(R1 / "db_tables.csv")
 
 
@@ -49,17 +49,17 @@ Pipeline: hash isi, baca format, validasi, karantina, muat ke DuckDB; KPI lewat 
 
 - {I(a1.loaded)} dari {I(uniq)} file unik dimuat ({P(a1.loaded / uniq, 1)}); {I(a1.quarantined)} masuk karantina dengan alasan; percobaan kedua menambah {I(idem.loc['test_run', 'tambahan'])} baris test_run dan {I(idem.loc['measurement', 'tambahan'])} baris measurement.
 - Macro lama (ditiru) salah membaca {I(ms.nilai_berubah)} nilai ({P(ms.persen_nilai_berubah, 1)}) di {I(ms.file_terdampak)} file.
-- Cpk per model dan kondisi (semua di atas 1,33; spesifikasi lebar):
+- Cpk per model dan kondisi ({n_below} dari {len(cp)} kombinasi di bawah 1,33):
 
 | Kombinasi | Hasil ukur | Cpk (CI 95%) | Out-of-spec |
 |---|---|---|---|
 {rows}
 
-- Pergeseran rata-rata mesin {gs.mesin_tertanam} terdeteksi mulai {gs.tanggal_terdeteksi} ({P(gs.persen_terdeteksi, 1)}); tanggal sama dengan yang ditanam.
+- Penurunan rata-rata mesin {gs.mesin_tertanam} terdeteksi {gs.tanggal_terdeteksi} sampai {gs.tanggal_terdeteksi_selesai} ({D(gs.selisih_terdeteksi_g, 0)} g, {P(gs.persen_terdeteksi, 1)}); tanggal mulai sama dengan yang ditanam (jendela 7 hari adalah asumsi).
 
 ## 4. Recommendation
 
-Jalankan pipeline terjadwal dan tinjau folder karantina; tambahkan aturan untuk format mesin baru; selidiki kalibrasi mesin {gs.mesin_tertanam}; pantau jarak rata-rata ke LSL karena spesifikasi lebar.
+Jalankan pipeline terjadwal dan tinjau folder karantina; tambahkan aturan untuk format mesin baru; selidiki kalibrasi mesin {gs.mesin_tertanam}; turunkan variasi kombinasi dengan Cpk di bawah 1,33 dan pantau jarak rata-rata ke LSL.
 
 ## 5. Impact
 
@@ -73,7 +73,7 @@ jam hemat per tahun = file dimuat per tahun x menit manual per file / 60
 
 - **Data adalah simulasi**; angka menggambarkan simulasi, bukan lini produksi.
 - Macro lama ditiru dari deskripsi rancangan; workbook asli tidak tersedia. Menit manual per file, kapasitas mesin, dan aturan baca angka adalah asumsi.
-- Fakta rancangan hanya sebagian ditanam: tidak ada Cpk di bawah 1,33, tidak ada nilai tidak wajar, tidak ada jenis uji shear; pergeseran mesin permanen, bukan sekitar 1 minggu.
+- Lima fakta data rancangan ditanam dan terdeteksi; jenis uji shear tidak ada di data. Generator dan pipeline ditulis oleh orang yang sama, jadi uji pemulihan optimistis.
 - Dashboard belum di-deploy (diuji AppTest: {I((dt.hasil == 'lulus').sum())} dari {I(len(dt))} lulus) dan success criteria "orang awam menyebut kombinasi Cpk terendah dalam 1 menit" belum diuji; slide dan file contoh di data/samples tidak dibuat; branch belum di-merge ke main.
 - Cek silang: {I(cx.cocok.sum())} dari {I(len(cx))} cocok; pytest {I((pt.hasil == 'lulus').sum())} dari {I(len(pt))} lulus.
 

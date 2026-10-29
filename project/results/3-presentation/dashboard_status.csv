@@ -1,5 +1,7 @@
 status,error_type,file
-loaded,-,1159
+loaded,-,1141
+quarantined,file_kosong,10
 quarantined,format_mesin_baru,18
-quarantined,terpotong,23
+quarantined,header_tidak_lengkap,12
+quarantined,terpotong,19
 skipped,duplikat_isi,14

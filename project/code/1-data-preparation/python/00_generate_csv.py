@@ -2,7 +2,7 @@
 
 +-1.200 file, +-15.000 baris hasil ukur; 2 model x 2 kondisi (sebelum/sesudah oven) x 2 mesin x 2 shift, +-3 bulan.
 Hasil (data/sim/incoming/): CSV mesin (beberapa rusak, beda format angka, ganda, format mesin baru),
-data/sim/ground_truth.json (daftar file bermasalah dan pergeseran). Jalankan: python3 code/1-data-preparation/python/00_generate_csv.py dari folder project/ (versi data: v1)
+data/sim/ground_truth.json (daftar file bermasalah dan pergeseran). Jalankan: python3 code/1-data-preparation/python/00_generate_csv.py dari folder project/ (versi data: v2)
 """
 import json
 import sys
@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import numpy as np
 from common import SIM as OUT
 SEED = 20260401
-DATA_VERSION = "v1"
+DATA_VERSION = "v2"
 LSL, USL = 1500.0, 19000.0
 START = date(2026, 4, 1)
 N_DAYS = 91
@@ -24,9 +24,11 @@ MACHINES = ["PT-01", "PT-02"]
 SHIFTS = ["Shift 1", "Shift 2"]
 BASE = {("Model A", "before_oven"): 7200.0, ("Model A", "after_oven"): 8600.0,
         ("Model B", "before_oven"): 6800.0, ("Model B", "after_oven"): 8300.0}
-UNIT_SD = 850.0
-SHIFT_DAY, SHIFT_MACHINE, SHIFT_FRAC = 52, "PT-02", -0.08      # pergeseran rata-rata -8% setelah kalibrasi (hari ke-52)
-BAD_RATES = dict(corrupt=0.02, number_format=0.03, duplicate=0.012, new_format=0.015)
+UNIT_SD = {k: 850.0 for k in BASE}
+UNIT_SD[("Model B", "before_oven")] = 1700.0                   # rancangan fakta 1: variasi besar sehingga Cpk di bawah 1,33
+SHIFT_DAY, SHIFT_DAYS, SHIFT_MACHINE, SHIFT_G = 52, 7, "PT-02", -800.0   # rancangan fakta 2: -800 g selama 1 minggu (hari ke-52 sampai 58)
+INVALID_RATE = 0.025                                           # rancangan fakta 5: 2% sampai 3% nilai tidak wajar
+BAD_RATES = dict(corrupt=0.02, number_format=0.03, duplicate=0.012, new_format=0.015, empty=0.008, missing_column=0.008)
 
 rng = np.random.default_rng(SEED)
 ROWS_PER_FILE = lambda: int(rng.integers(9, 17))   # rata-rata 12,5 baris -> +-15.000 baris
@@ -45,14 +47,23 @@ specs.sort(key=lambda s: (s["day"], s["i"]))
 
 pick = lambda frac: set(int(k) for k in rng.choice(N_FILES, int(round(frac * N_FILES)), replace=False))
 corrupt, numfmt, dup, newfmt = (pick(BAD_RATES[k]) for k in ("corrupt", "number_format", "duplicate", "new_format"))
+avail = sorted(set(range(N_FILES)) - corrupt - numfmt - dup - newfmt)          # file kosong dan kolom hilang tidak bertumpuk dengan masalah lain
+empty = set(int(k) for k in rng.choice(avail, int(round(BAD_RATES["empty"] * N_FILES)), replace=False))
+avail = sorted(set(avail) - empty)
+nocol = set(int(k) for k in rng.choice(avail, int(round(BAD_RATES["missing_column"] * N_FILES)), replace=False))
 (OUT / "incoming").mkdir(parents=True, exist_ok=True)
-bad = {"corrupt": [], "number_format": [], "duplicate": [], "new_format": []}
-rows_total, written = 0, []
+bad = {"corrupt": [], "number_format": [], "duplicate": [], "new_format": [], "empty": [], "missing_column": []}
+rows_total, written, invalid_by_file = 0, [], {}
 for pos, s in enumerate(specs):
     mu = BASE[(s["model"], s["cond"])] + rng.normal(0, 150)
-    if s["machine"] == SHIFT_MACHINE and s["day"] >= SHIFT_DAY:
-        mu *= 1 + SHIFT_FRAC
-    vals = np.round(rng.normal(mu, UNIT_SD, s["n"]), 1)
+    if s["machine"] == SHIFT_MACHINE and SHIFT_DAY <= s["day"] < SHIFT_DAY + SHIFT_DAYS:
+        mu += SHIFT_G
+    vals = np.round(rng.normal(mu, UNIT_SD[(s["model"], s["cond"])], s["n"]), 1)
+    bad_mask = rng.random(s["n"]) < INVALID_RATE                  # nilai tidak wajar: 0, negatif, atau di atas kapasitas mesin
+    if bad_mask.any():
+        kinds = rng.integers(0, 3, int(bad_mask.sum()))
+        vals[bad_mask] = np.where(kinds == 0, 0.0, np.where(kinds == 1, -np.round(rng.uniform(10, 500, len(kinds)), 1), np.round(rng.uniform(20500, 30000, len(kinds)), 1)))
+    n_invalid_this = int(bad_mask.sum())
     rows_total += s["n"]
     d = START + timedelta(days=s["day"])
     name = f"{s['machine']}_{d.strftime('%Y%m%d')}_{s['shift'].replace(' ', '')}_{s['model'].replace(' ', '')}_{s['cond']}_{pos + 1:04d}.csv"
@@ -70,9 +81,17 @@ for pos, s in enumerate(specs):
                  f"LSL (g);{fmt_id(LSL)}", f"USL (g);{fmt_id(USL)}", "Sample No;Force (g)"]
         lines += [f"{j + 1};{fmt(v)}" for j, v in enumerate(vals)]
         text = "\n".join(lines) + "\n"
+    if pos in empty:                                   # file kosong (isi hanya baris kosong; panjang beda agar isi tidak identik)
+        text = "\n" * (len(bad["empty"]) + 1)
+        bad["empty"].append(name)
+    elif pos in nocol:                                 # kolom hilang: kolom Force (g) tidak ada
+        text = "\n".join(l.split(";")[0] if i >= 8 else l for i, l in enumerate(text.rstrip("\n").split("\n"))) + "\n"
+        bad["missing_column"].append(name)
     if pos in corrupt:                                 # file rusak: terpotong di tengah baris
         text = text[: int(len(text) * rng.uniform(0.35, 0.8))]
         bad["corrupt"].append(name)
+    if n_invalid_this:
+        invalid_by_file[name] = n_invalid_this
     (OUT / "incoming" / name).write_text(text, encoding="utf-8")
     written.append((name, text))
     if pos in dup:                                     # file yang sama masuk dua kali dengan nama berbeda
@@ -81,9 +100,10 @@ for pos, s in enumerate(specs):
 
 gt = {"seed": SEED, "version": DATA_VERSION, "n_files_base": N_FILES, "n_rows_clean": rows_total,
       "lsl_g": LSL, "usl_g": USL,
-      "mean_shift": {"machine": SHIFT_MACHINE, "from": str(START + timedelta(days=SHIFT_DAY)), "fraction": SHIFT_FRAC,
-                     "note": "kalibrasi mesin"},
+      "invalid_by_file": invalid_by_file,
+      "mean_shift": {"machine": SHIFT_MACHINE, "from": str(START + timedelta(days=SHIFT_DAY)), "to": str(START + timedelta(days=SHIFT_DAY + SHIFT_DAYS - 1)),
+                     "delta_g": SHIFT_G, "note": "kalibrasi mesin salah selama 1 minggu"},
       "bad_files": bad}
 (OUT / "ground_truth.json").write_text(json.dumps(gt, indent=2, ensure_ascii=False), encoding="utf-8")
 print(f"{N_FILES} file + {len(bad['duplicate'])} salinan, {rows_total} baris; rusak {len(bad['corrupt'])}, "
-      f"format angka {len(bad['number_format'])}, format baru {len(bad['new_format'])}")
+      f"format angka {len(bad['number_format'])}, format baru {len(bad['new_format'])}, kosong {len(bad['empty'])}, kolom hilang {len(bad['missing_column'])}, nilai tak wajar {sum(invalid_by_file.values())}")

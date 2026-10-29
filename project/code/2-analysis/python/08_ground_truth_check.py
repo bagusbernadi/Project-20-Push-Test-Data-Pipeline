@@ -22,6 +22,7 @@ fmt = dict(con.execute("SELECT file_name, number_format FROM test_run").fetchall
 con.close()
 TRUNC_OK = {"terpotong", "header_tidak_lengkap", "baris_rusak", "nilai_bukan_angka", "tanggal_tidak_valid"}
 newf, corr, dup, numf = set(bad["new_format"]), set(bad["corrupt"]), set(bad["duplicate"]), set(bad["number_format"])
+emp, nocol = set(bad["empty"]), set(bad["missing_column"])
 rows = []
 def add(kat, names, check):
     ok = sum(1 for n in names if check(n))
@@ -29,11 +30,13 @@ def add(kat, names, check):
 add("format mesin baru", sorted(newf), lambda n: log.loc[n, "status"] == "quarantined" and log.loc[n, "error_type"] == "format_mesin_baru")
 add("file terpotong (bukan format baru)", sorted(corr - newf), lambda n: log.loc[n, "status"] == "quarantined" and log.loc[n, "error_type"] in TRUNC_OK)
 add("file terpotong yang juga format baru", sorted(corr & newf), lambda n: log.loc[n, "status"] == "quarantined")
+add("file kosong", sorted(emp), lambda n: log.loc[n, "status"] == "quarantined" and log.loc[n, "error_type"] == "file_kosong")
+add("kolom hilang (tanpa kolom Force)", sorted(nocol), lambda n: log.loc[n, "status"] == "quarantined" and log.loc[n, "error_type"] == "header_tidak_lengkap")
 add("salinan ganda (nama copy_of_)", sorted("copy_of_" + n for n in dup), lambda n: log.loc[n, "status"] == "skipped" and log.loc[n, "error_type"] == "duplikat_isi")
 add("format angka titik/koma lain (tidak rusak)", sorted(numf - corr - newf), lambda n: log.loc[n, "status"] == "loaded" and fmt.get(n) == "US")
 gtd = pd.DataFrame(rows)
 gtd.to_csv(CM.RES2 / "ground_truth_files.csv", index=False)
-all_bad = newf | corr
+all_bad = newf | corr | emp | nocol
 normal = [n for n in log.index if not n.startswith("copy_of_") and n not in all_bad]
 n_loaded_normal = sum(1 for n in normal if log.loc[n, "status"] == "loaded")
 false_q = [n for n in normal if log.loc[n, "status"] == "quarantined"]
@@ -47,16 +50,21 @@ bad_vals = int(log.rows_invalid.sum())
 ms = gt["mean_shift"]
 shift_row = cp.loc[ms["machine"]]
 other = [m for m in cp.index if m != ms["machine"]][0]
+loaded_names = set(log.index[log.status == "loaded"])
+invalid_planted = {n: k for n, k in gt["invalid_by_file"].items() if n in loaded_names}      # hanya file yang dimuat (nilai terbaca)
+n_inv_pl = sum(invalid_planted.values())
+tc = pd.read_csv(CM.RES1 / "ingest_log.csv"); n_read = int(tc.rows_read.sum())
 facts = pd.DataFrame([
-    dict(fakta=1, rancangan="satu kombinasi dibuat bervariasi besar sehingga Cpk < 1,33", ukuran="Cpk terendah", nilai=cpk.cpk.min(), nilai2=float(cpk.di_bawah_cpk_target.sum()), keterangan="kombinasi di bawah 1,33"),
-    dict(fakta=2, rancangan="rata-rata satu mesin turun sekitar 800 g selama sekitar 1 minggu setelah kalibrasi", ukuran="selisih rata-rata mesin PT-02 setelah titik ubah (g)", nilai=shift_row.selisih_g,
-         nilai2=float(pd.Timestamp(shift_row.tanggal_titik_ubah) == pd.Timestamp(ms["from"])), keterangan="tanggal titik ubah sama dengan tanggal tertanam"),
-    dict(fakta=3, rancangan="sekitar 3% file berformat titik ribuan dan koma desimal", ukuran="persen file dengan format angka lain", nilai=len(numf) / gt["n_files_base"], nilai2=float(len(numf)), keterangan="file tertanam"),
-    dict(fakta=4, rancangan="file bermasalah: header berbeda, kolom hilang, file kosong, file ganda", ukuran="jenis file bermasalah tertanam", nilai=float(len(newf) + len(corr) + len(dup)), nilai2=float(len(dup)), keterangan="file bermasalah tertanam (salinan)"),
-    dict(fakta=5, rancangan="2% sampai 3% nilai tidak wajar (0, negatif, di atas kapasitas)", ukuran="hasil ukur tidak valid di data", nilai=float(bad_vals), nilai2=float(bad_vals) / 14990, keterangan="baris tidak valid"),
+    dict(fakta=1, rancangan="satu kombinasi dibuat bervariasi besar sehingga Cpk < 1,33", ukuran="Cpk terendah", nilai=cpk.cpk.min(), nilai2=float(cpk.di_bawah_cpk_target.sum()), keterangan="kombinasi di bawah 1,33",
+         kombinasi=f"{cpk.sort_values('cpk').iloc[0].model} {cpk.sort_values('cpk').iloc[0].condition}"),
+    dict(fakta=2, rancangan="rata-rata satu mesin turun sekitar 800 g selama sekitar 1 minggu setelah kalibrasi", ukuran="selisih rata-rata jendela PT-02 terhadap di luar jendela (g)", nilai=shift_row.selisih_g,
+         nilai2=float(pd.Timestamp(shift_row.tanggal_mulai) == pd.Timestamp(ms["from"])), keterangan="tanggal mulai jendela sama dengan tanggal tertanam", kombinasi=""),
+    dict(fakta=3, rancangan="sekitar 3% file berformat titik ribuan dan koma desimal", ukuran="persen file dengan format angka lain", nilai=len(numf) / gt["n_files_base"], nilai2=float(len(numf)), keterangan="file tertanam", kombinasi=""),
+    dict(fakta=4, rancangan="file bermasalah: header berbeda, kolom hilang, file kosong, file ganda", ukuran="jenis file bermasalah tertanam", nilai=float(len(newf) + len(corr) + len(dup) + len(emp) + len(nocol)), nilai2=float(len(dup)), keterangan="file bermasalah tertanam (salinan)", kombinasi=""),
+    dict(fakta=5, rancangan="2% sampai 3% nilai tidak wajar (0, negatif, di atas kapasitas)", ukuran="persen hasil ukur tidak valid di file yang dimuat", nilai=float(bad_vals), nilai2=float(bad_vals) / n_read, keterangan="baris tidak valid terdeteksi", kombinasi=str(n_inv_pl)),
 ])
 facts.to_csv(CM.RES2 / "design_facts.csv", index=False, float_format="%.10g")
-cpd = pd.DataFrame([dict(mesin_tertanam=ms["machine"], tanggal_tertanam=ms["from"], persen_tertanam=ms["fraction"], tanggal_terdeteksi=shift_row.tanggal_titik_ubah, persen_terdeteksi=shift_row.persen_dari_rata,
+cpd = pd.DataFrame([dict(mesin_tertanam=ms["machine"], tanggal_tertanam=ms["from"], tanggal_tertanam_selesai=ms["to"], selisih_tertanam_g=ms["delta_g"], tanggal_terdeteksi=shift_row.tanggal_mulai, tanggal_terdeteksi_selesai=shift_row.tanggal_selesai, selisih_terdeteksi_g=shift_row.selisih_g, persen_terdeteksi=shift_row.persen_dari_rata,
                          p_permutasi=shift_row.p_permutasi, mesin_lain=other, p_permutasi_mesin_lain=cp.loc[other].p_permutasi)])
 cpd.to_csv(CM.RES2 / "ground_truth_shift.csv", index=False, float_format="%.10g")
 
