@@ -30,7 +30,7 @@ cpk = rd(r2, "cpk_group.csv"); kg = rd(r2, "kpi_group.csv"); kms = rd(r2, "kpi_m
 wa = rd(r2, "weekly_all.csv"); wm = rd(r2, "weekly_machine.csv"); cp = rd(r2, "changepoint.csv").set_index("machine_id"); smt = rd(r2, "shift_machine_test.csv").set_index("faktor")
 ms = rd(r2, "macro_summary.csv").iloc[0]; mgc = rd(r2, "macro_group_compare.csv"); msc = rd(r2, "macro_session_compare.csv").set_index("ukuran")
 imp = rd(r2, "impact.csv"); cx = rd(r2, "crosscheck.csv"); fct = rd(r2, "design_facts.csv").set_index("fakta"); gtf = rd(r2, "ground_truth_files.csv")
-gtn = rd(r2, "ground_truth_normal.csv").iloc[0]; gts = rd(r2, "ground_truth_shift.csv").iloc[0]; idem = rd(r2, "idempotency.csv").set_index("tabel"); pyt = rd(r2, "pytest_result.csv")
+gsh = rd(r2, "ground_truth_shear_type.csv").iloc[0]; ksh = rd(r2, "kpi_shear.csv"); gtn = rd(r2, "ground_truth_normal.csv").iloc[0]; gts = rd(r2, "ground_truth_shift.csv").iloc[0]; idem = rd(r2, "idempotency.csv").set_index("tabel"); pyt = rd(r2, "pytest_result.csv")
 dtest = rd(r3, "dashboard_test.csv"); dst = rd(r3, "dashboard_status.csv")
 
 a1, a2 = att.loc[1], att.loc[2]
@@ -232,7 +232,7 @@ REP.append('<h3>1.1 Data mentah</h3><div class="card"><p>Tabel 1.1a: lima sesi u
 FILES = {
     "changepoint.csv": "jendela penurunan rata-rata per mesin", "dip_sensitivity.csv": "sensitivitas panjang jendela penurunan", "cpk_group.csv": "Cpk dan out-of-spec per model dan kondisi", "crosscheck.csv": "cek silang SQL, pandas, Excel", "design_facts.csv": "lima fakta data rancangan terhadap hasil",
     "ground_truth_files.csv": "file rusak ditanam vs terdeteksi", "ground_truth_normal.csv": "file normal dan rusak", "ground_truth_shift.csv": "pergeseran ditanam vs terdeteksi", "idempotency.csv": "uji pemuatan dua kali",
-    "impact.csv": "estimasi jam dihemat (estimated)", "kpi_group.csv": "KPI per model dan kondisi", "kpi_machine_shift.csv": "KPI per mesin dan shift", "kpi_run.csv": "KPI per sesi uji", "kpi_weekly.csv": "KPI per minggu dan mesin",
+    "kpi_shear.csv": "KPI shear test per model dan kondisi", "ground_truth_shear_type.csv": "file shear ditanam vs dimuat sebagai shear", "impact.csv": "estimasi jam dihemat (estimated)", "kpi_group.csv": "KPI per model dan kondisi", "kpi_machine_shift.csv": "KPI per mesin dan shift", "kpi_run.csv": "KPI per sesi uji", "kpi_weekly.csv": "KPI per minggu dan mesin",
     "macro_group_compare.csv": "pipeline vs macro per kelompok", "macro_session_compare.csv": "pipeline vs macro per sesi", "macro_summary.csv": "ringkasan selisih macro tiruan", "pytest_result.csv": "hasil pytest parser",
     "shift_machine_test.csv": "uji shift dan mesin", "weekly_all.csv": "Cpk dan rata-rata mingguan gabungan", "weekly_machine.csv": "rata-rata mingguan per mesin"}
 real = sorted(p.name for p in r2.glob("*.csv"))
@@ -259,15 +259,17 @@ REP.append('<h2 id="rp3">3. Apakah dataset sesuai dengan Design Project?<small>P
 REP.append('<div class="card"><p class="how">Tabel 3a. Rancangan dan realisasi dataset.</p>'
            + table(["Hal", "Rancangan", "Realisasi", "Verdict"], [
                ["Sumber data", "simulasi buatan sendiri dari scripts/generate_csv.py", f"00_generate_csv.py (seed tetap), dibuat ulang dan dicocokkan dengan sidik jari repo DataCenter ({I(n_fp_ok)} dari {I(n_fp)} berkas)", pill("Sesuai", "")],
-               ["Ukuran", "±1.200 file, ±15.000 hasil ukur", f"{I(uniq)} file unik ditambah {I(d_dup)} salinan; {I(meas)} hasil ukur dimuat dari {I(runs)} file", pill("Sesuai", "")],
-               ["Tabel", "test_run, measurement, spec, ingest_log", "empat tabel yang sama di DuckDB; kolom test_type tidak ada (jenis uji shear tidak ada di data)", pill("Sesuai + penyesuaian", "p")],
+               ["Ukuran", "±1.200 file, ±15.000 hasil ukur", f"{I(uniq)} file unik ditambah {I(d_dup)} salinan; {I(meas)} hasil ukur dimuat dari {I(runs)} file (termasuk {I(gsh.file_shear_ditanam)} file shear test yang ditambahkan)", pill("Lebih besar", "")],
+               ["Tabel", "test_run, measurement, spec, ingest_log", "empat tabel yang sama di DuckDB; kolom test_type berisi push dan shear", pill("Sesuai", "")],
                ["Fakta 1: satu kombinasi dengan Cpk di bawah 1,33", "Cpk < 1,33", f"{f1.kombinasi} Cpk {D(f1.nilai, 2)}, satu-satunya kombinasi di bawah 1,33 ({I(f1.nilai2)} kombinasi)", pill("Sesuai", "")],
                ["Fakta 2: rata-rata satu mesin turun ±800 g selama ±1 minggu", "turun ±800 g, ±1 minggu", f"PT-02 turun {D(abs(f2.nilai), 0)} g ({P(abs(cp.loc['PT-02', 'persen_dari_rata']), 1)}) pada {cp.loc['PT-02', 'tanggal_mulai']} sampai {cp.loc['PT-02', 'tanggal_selesai']}; tanggal mulai terdeteksi sama dengan yang ditanam", pill("Sesuai", "")],
                ["Fakta 3: ±3% file berformat titik ribuan dan koma desimal", "±3% file", f"{I(f3.nilai2)} file ({P(f3.nilai, 1)}) berformat angka lain, semuanya terbaca benar oleh pipeline", pill("Sesuai", "")],
                ["Fakta 4: file bermasalah (header berbeda, kolom hilang, file kosong, file ganda)", "empat jenis", f"header berbeda (format mesin baru) {I(gtd.loc['format mesin baru', 'ditanam'])}, kolom hilang {I(gtd.loc['kolom hilang (tanpa kolom Force)', 'ditanam'])}, file kosong {I(gtd.loc['file kosong', 'ditanam'])}, salinan {I(gtd.loc['salinan ganda (nama copy_of_)', 'ditanam'])}, terpotong {I(gtd.loc['file terpotong (bukan format baru)', 'ditanam'])}", pill("Sesuai", "")],
                ["Fakta 5: 2% sampai 3% nilai tidak wajar", "0, negatif, di atas kapasitas", f"{I(inv_pl)} baris ditanam, {I(f5.nilai)} terdeteksi tidak valid ({P(f5.nilai2, 1)} hasil ukur file dimuat)", pill("Sesuai", "")],
-               ["Jenis uji", "push dan shear", "hanya push test", pill("Berubah", "d")],
-               ["Hipotesis", "tidak ada hipotesis formal pada rancangan", "lima fakta data di atas diperlakukan sebagai klaim yang diuji", pill("Tidak berlaku", "d")]]) + '</div>')
+               ["Jenis uji", "push dan shear", f"{I(gsh.dimuat_sebagai_shear)} dari {I(gsh.file_shear_ditanam)} file shear dimuat sebagai shear, tanpa salah label; jenis uji dibaca dari nama program mesin; spesifikasi shear {I(C.SHEAR_LSL)} sampai {I(C.SHEAR_USL)} g adalah ASUMSI (rancangan tidak memberi angka); Cpk shear terendah {D(gsh.cpk_shear_terendah, 2)}", pill("Sesuai + penyesuaian", "p")],
+               ["Hipotesis", "tidak ada hipotesis formal pada rancangan", "lima fakta data di atas diperlakukan sebagai klaim yang diuji", pill("Tidak berlaku", "d")]])
+           + '<p class="how">Tabel 3b. KPI shear test per model dan kondisi (spesifikasi shear adalah ASUMSI).</p>'
+           + table(["Model", "Kondisi", "Sesi", "Hasil ukur", "Rata-rata (g)", "Simpangan baku (g)", "Cpk"], [[r.model, r.condition, I(r.sesi), I(r.n), D(r.mean_g, 0), D(r.sd_g, 0), D(r.cpk, 2)] for r in ksh.itertuples()]) + '</div>')
 
 # ---------- rp4 ----------
 REP.append('<h2 id="rp4">4. Apakah tools yang digunakan sesuai?<small>Perbandingan rancangan dengan eksekusi</small></h2>')
@@ -357,8 +359,8 @@ REP.append('<h4>7.5 Saran perbaikan</h4><div class="card"><ul class="tight">'
 REP.append('<h4>7.6 Batasan</h4><div class="card"><ul class="tight">'
            f'<li><b>Data adalah simulasi;</b> angka menggambarkan simulasi, bukan lini produksi. Semua {I(gt_det)} kategori file rusak yang ditanam terdeteksi, tetapi hanya untuk kategori yang ditanam generator.</li>'
            '<li>Macro lama ditiru dari deskripsi rancangan; workbook asli tidak tersedia, sehingga rekonsiliasi (Q2, Q3) bergantung pada tiruan itu.</li>'
-           f'<li>Asumsi buatan sendiri: aturan file terpotong, kapasitas mesin, aturan baca angka, Cpk per kelompok gabungan, {I(imp5.menit_per_file)} menit per file, volume tahunan, uji shear dan mesin pada rata-rata sesi.</li>'
-           f'<li>Kelima fakta data rancangan ditanam dan terdeteksi, kecuali jenis uji shear yang tidak ada di data. Generator, jenis kerusakan, dan jendela penurunan 7 hari ditulis oleh orang yang sama dengan pipeline, jadi uji pemulihan optimistis.</li>'
+           f'<li>Asumsi buatan sendiri: aturan file terpotong, kapasitas mesin, aturan baca angka, Cpk per kelompok gabungan, {I(imp5.menit_per_file)} menit per file, volume tahunan, uji shift dan mesin pada rata-rata sesi, serta spesifikasi dan nilai dasar shear test.</li>'
+           f'<li>Kelima fakta data rancangan ditanam dan terdeteksi. Aliran shear test ({I(gsh.file_shear_ditanam)} file) ditambahkan dengan nilai dasar dan spesifikasi asumsi, tanpa file rusak dan tanpa pergeseran mesin; analisis Cpk, tren, dan dashboard hanya untuk push test, shear hanya punya tabel KPI dan cek silang. Generator, jenis kerusakan, dan jendela penurunan 7 hari ditulis oleh orang yang sama dengan pipeline, jadi uji pemulihan optimistis.</li>'
            f'<li>Perbedaan shift kecil tetapi signifikan (p Holm {pv(ph_shift)}); mesin dan shift tidak dipisah dari waktu. Penyebab pergeseran PT-02 tidak bisa dipastikan dari data.</li>'
            f'<li>Dashboard belum di-deploy; kriteria pembaca awam belum diuji; slide dan file contoh di data/samples tidak dibuat; branch belum di-merge ke main.</li>'
            '<li>Rumus Excel dihitung ulang LibreOffice, bukan Excel. Lisensi data tidak berlaku (data karangan).</li></ul></div>')
@@ -369,7 +371,7 @@ REPORT_PANE = ('<div class="pane" id="report" data-tab="report" hidden>\n<div cl
                    [f'<span class="en">{i}</span>', f'<a href="#rp{i}">{t}</a>', pill(v[0], v[1]), v[2]] for i, (t, v) in enumerate([
                        ("Data yang berhasil didapatkan", ("Berhasil", "", f"{I(a1.loaded)} dari {I(uniq)} file dimuat, {I(meas)} hasil ukur")),
                        ("Apakah business question terjawab?", ("Sesuai", "", f"{I(n_ans)} dari {I(n_ans)} terjawab, {I(len(WARN))} dengan catatan")),
-                       ("Apakah dataset sesuai dengan Design Project?", ("Sesuai + penyesuaian", "p", "lima fakta data ditanam dan terdeteksi; jenis uji shear tidak ada")),
+                       ("Apakah dataset sesuai dengan Design Project?", ("Sesuai + penyesuaian", "p", "lima fakta data ditanam dan terdeteksi; jenis uji shear dimuat dengan spesifikasi asumsi")),
                        ("Apakah tools yang digunakan sesuai?", ("Sesuai + penyesuaian", "p", "macro ditiru, dashboard belum di-deploy")),
                        ("Apakah alur pengerjaan sesuai dengan Design Project?", ("Sesuai + tambahan", "", "dua belas langkah dijalankan")),
                        ("Apakah project output tercapai?", ("Sebagian", "p", "dashboard belum di-deploy, slide tidak dibuat")),

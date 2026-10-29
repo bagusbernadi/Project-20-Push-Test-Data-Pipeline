@@ -19,6 +19,7 @@ bad = gt["bad_files"]
 log = pd.read_csv(CM.RES1 / "ingest_log.csv").set_index("file_name")
 con = duckdb.connect(str(CM.DB_PATH), read_only=True)
 fmt = dict(con.execute("SELECT file_name, number_format FROM test_run").fetchall())
+ttype = dict(con.execute("SELECT file_name, test_type FROM test_run").fetchall())
 con.close()
 TRUNC_OK = {"terpotong", "header_tidak_lengkap", "baris_rusak", "nilai_bukan_angka", "tanggal_tidak_valid"}
 newf, corr, dup, numf = set(bad["new_format"]), set(bad["corrupt"]), set(bad["duplicate"]), set(bad["number_format"])
@@ -43,6 +44,11 @@ false_q = [n for n in normal if log.loc[n, "status"] == "quarantined"]
 extra = dict(file_normal=len(normal), file_normal_dimuat=n_loaded_normal, file_normal_salah_karantina=len(false_q), file_rusak_ditanam=len(all_bad),
              file_rusak_lolos_dimuat=int(sum(1 for n in all_bad if log.loc[n, "status"] == "loaded")), file_dikarantina=int((log.status == "quarantined").sum()))
 pd.DataFrame([extra]).to_csv(CM.RES2 / "ground_truth_normal.csv", index=False)
+
+# jenis uji shear (rancangan: test_type push / shear): file shear tertanam harus dimuat dengan test_type shear, file push tidak boleh berlabel shear
+sh = set(gt["shear_files"]); sk = pd.read_csv(CM.RES2 / "kpi_shear.csv")
+pd.DataFrame([dict(file_shear_ditanam=len(sh), dimuat_sebagai_shear=sum(1 for n in sh if ttype.get(n) == "shear"), dimuat_sebagai_push=sum(1 for n in sh if ttype.get(n) == "push"),
+                   push_berlabel_shear=sum(1 for n, t in ttype.items() if t == "shear" and n not in sh), kelompok_kpi_shear=len(sk), cpk_shear_terendah=float(sk.cpk.min()))]).to_csv(CM.RES2 / "ground_truth_shear_type.csv", index=False, float_format="%.10g")
 
 # fakta rancangan: nilai tak wajar, Cpk, dan pergeseran
 cpk = pd.read_csv(CM.RES2 / "cpk_group.csv"); cp = pd.read_csv(CM.RES2 / "changepoint.csv").set_index("machine_id")

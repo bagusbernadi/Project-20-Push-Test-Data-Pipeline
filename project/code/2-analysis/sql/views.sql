@@ -1,9 +1,9 @@
--- View KPI push test (Project 20). Cpk = MIN(USL - mean, mean - LSL) / (3 x stdev sampel). Hanya hasil ukur valid (0 < nilai <= kapasitas).
+-- View KPI push test (Project 20). v_measure dan view KPI lain hanya untuk push test; shear test punya v_kpi_shear. Cpk = MIN(USL - mean, mean - LSL) / (3 x stdev sampel). Hanya hasil ukur valid (0 < nilai <= kapasitas).
 CREATE OR REPLACE VIEW v_measure AS
 SELECT r.run_id, r.file_name, r.machine_id, r.model, r.condition, r.shift, r.test_datetime, m.seq, m.force_g, m.judgement,
        s.lsl_g, s.usl_g, STRFTIME(r.test_datetime, '%G-W%V') AS iso_week
 FROM measurement m JOIN test_run r USING (run_id) JOIN spec s ON s.model = r.model AND s.test_type = r.test_type
-WHERE m.is_valid;
+WHERE m.is_valid AND r.test_type = 'push';
 
 CREATE OR REPLACE VIEW v_kpi_group AS
 SELECT model, condition, COUNT(DISTINCT run_id) AS sesi, COUNT(*) AS n, AVG(force_g) AS mean_g, MIN(force_g) AS min_g, MAX(force_g) AS max_g,
@@ -25,3 +25,11 @@ FROM v_measure GROUP BY iso_week, machine_id;
 CREATE OR REPLACE VIEW v_kpi_run AS
 SELECT run_id, file_name, model, condition, machine_id, shift, test_datetime, COUNT(*) AS n, AVG(force_g) AS mean_g, MIN(force_g) AS min_g, MAX(force_g) AS max_g, STDDEV_SAMP(force_g) AS sd_g
 FROM v_measure GROUP BY run_id, file_name, model, condition, machine_id, shift, test_datetime;
+
+CREATE OR REPLACE VIEW v_kpi_shear AS
+SELECT r.model, r.condition, COUNT(DISTINCT r.run_id) AS sesi, COUNT(*) AS n, AVG(m.force_g) AS mean_g, MIN(m.force_g) AS min_g, MAX(m.force_g) AS max_g,
+       STDDEV_SAMP(m.force_g) AS sd_g, ANY_VALUE(s.lsl_g) AS lsl_g, ANY_VALUE(s.usl_g) AS usl_g,
+       LEAST((ANY_VALUE(s.usl_g) - AVG(m.force_g)), (AVG(m.force_g) - ANY_VALUE(s.lsl_g))) / (3 * STDDEV_SAMP(m.force_g)) AS cpk,
+       AVG(CASE WHEN m.force_g < s.lsl_g OR m.force_g > s.usl_g THEN 1.0 ELSE 0.0 END) AS oos_rate
+FROM measurement m JOIN test_run r USING (run_id) JOIN spec s ON s.model = r.model AND s.test_type = r.test_type
+WHERE m.is_valid AND r.test_type = 'shear' GROUP BY r.model, r.condition;

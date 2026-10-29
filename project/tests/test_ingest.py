@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "code"))
 import pytest
 import ingest_lib as IL
 
-GOOD = ("Test Program;DS20KG\nTest Date;01/04/2026\nShift;Shift 1\nMachine;PT-01\nModel;Model A\nCondition;before_oven\n"
+GOOD = ("Test Program;PUSH-DS20KG\nTest Date;01/04/2026\nShift;Shift 1\nMachine;PT-01\nModel;Model A\nCondition;before_oven\n"
         "LSL (g);1500,0\nUSL (g);19000,0\nSample No;Force (g)\n{rows}\n")
 
 
@@ -88,3 +88,13 @@ def test_judgement_uses_spec(tmp_path, cfg):
     con = IL.connect(tmp_path / "t.duckdb")
     IL.ingest(con, inc, tmp_path / "q", cfg)
     assert [r[0] for r in con.execute("SELECT judgement FROM measurement ORDER BY seq").fetchall()] == ["NG", "OK", "NG"]
+
+
+def test_shear_program_dikenali(tmp_path):
+    r = IL.parse_file(mk(tmp_path, "s.csv", GOOD.replace("PUSH-DS20KG", "SHEAR-DS20KG").format(rows=rows("4200,5"))))
+    assert r["status"] == "ok" and r["header"]["test_type"] == "shear"
+
+
+def test_program_tidak_dikenal(tmp_path):
+    r = IL.parse_file(mk(tmp_path, "x.csv", GOOD.replace("PUSH-DS20KG", "PULL-DS20KG").format(rows=rows("4200,5"))))
+    assert r["status"] == "gagal" and r["error_type"] == "jenis_uji_tidak_dikenal"

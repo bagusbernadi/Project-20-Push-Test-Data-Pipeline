@@ -73,7 +73,7 @@ jam hemat per tahun = file dimuat per tahun x menit manual per file / 60
 
 - **Data adalah simulasi**; angka menggambarkan simulasi, bukan lini produksi.
 - Macro lama ditiru dari deskripsi rancangan; workbook asli tidak tersedia. Menit manual per file, kapasitas mesin, dan aturan baca angka adalah asumsi.
-- Lima fakta data rancangan ditanam dan terdeteksi; jenis uji shear tidak ada di data. Generator dan pipeline ditulis oleh orang yang sama, jadi uji pemulihan optimistis.
+- Lima fakta data rancangan ditanam dan terdeteksi. Aliran shear test ditambahkan dengan nilai dasar dan spesifikasi asumsi; analisis Cpk, tren, dan dashboard hanya untuk push test. Generator dan pipeline ditulis oleh orang yang sama, jadi uji pemulihan optimistis.
 - Dashboard belum di-deploy (diuji AppTest: {I((dt.hasil == 'lulus').sum())} dari {I(len(dt))} lulus) dan success criteria "orang awam menyebut kombinasi Cpk terendah dalam 1 menit" belum diuji; slide dan file contoh di data/samples tidak dibuat; branch belum di-merge ke main.
 - Cek silang: {I(cx.cocok.sum())} dari {I(len(cx))} cocok; pytest {I((pt.hasil == 'lulus').sum())} dari {I(len(pt))} lulus.
 

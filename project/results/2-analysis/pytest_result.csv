@@ -10,3 +10,5 @@ test_non_numeric_value,lulus
 test_out_of_range_values_flagged,lulus
 test_duplicate_and_idempotent,lulus
 test_judgement_uses_spec,lulus
+test_shear_program_dikenali,lulus
+test_program_tidak_dikenal,lulus

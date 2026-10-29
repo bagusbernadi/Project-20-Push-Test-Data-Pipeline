@@ -35,11 +35,13 @@ def name_info(n):
     return model, cond
 
 
-rows, failed, partial, copies = [], [], [], []
+rows, failed, partial, copies, shear_skip = [], [], [], [], []
 for f in sorted(CM.INCOMING.glob("*.csv")):
     text = f.read_text(encoding="utf-8")
     if text.startswith("# Machine,"):
         failed.append(f.name); continue
+    if text.startswith("Test Program;SHEAR"):          # ASUMSI: macro lama hanya untuk push test; file shear bukan bagian proses lama
+        shear_skip.append(f.name); continue
     model, cond = name_info(f.name)
     if not text.endswith("\n"):
         partial.append(f.name)
@@ -57,7 +59,7 @@ mac["fmt_us"] = mac.raw.str.contains(r"\.")
 cmp_ = pipe.merge(mac[["file_name", "seq", "macro_g", "fmt_us"]], on=["file_name", "seq"], how="left")
 cmp_["berubah"] = ~np.isclose(cmp_.force_g, cmp_.macro_g, atol=1e-6)
 files_aff = cmp_[cmp_.berubah].file_name.nunique()
-summ = dict(file_di_folder=len(list(CM.INCOMING.glob("*.csv"))), file_macro_gagal_format_baru=len(failed), file_terpotong_terbaca_sebagian=len(partial), file_salinan_terbaca_dua_kali=len(copies),
+summ = dict(file_di_folder=len(list(CM.INCOMING.glob("*.csv"))) - len(shear_skip), file_shear_dilewati=len(shear_skip), file_macro_gagal_format_baru=len(failed), file_terpotong_terbaca_sebagian=len(partial), file_salinan_terbaca_dua_kali=len(copies),
             nilai_pipeline=len(cmp_), nilai_berubah=int(cmp_.berubah.sum()), persen_nilai_berubah=cmp_.berubah.mean(), file_terdampak=files_aff, file_dimuat_pipeline=cmp_.file_name.nunique(),
             nilai_macro_total=len(mac), nilai_macro_dari_salinan=int(mac.file_name.str.startswith("copy_of_").sum()),
             nilai_macro_dari_file_terpotong=int(mac.file_name.isin(partial).sum()), selisih_nilai_macro_vs_pipeline=len(mac) - len(cmp_),

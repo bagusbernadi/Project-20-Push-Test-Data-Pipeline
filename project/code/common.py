@@ -28,6 +28,7 @@ BOOT_B = 2000
 CPK_TARGET = 1.33              # rancangan: Cpk di bawah 1,33 dianggap kurang
 MIN_N_CPK = 30                 # rancangan: Cpk dari < ±30 hasil ukur tidak stabil
 LSL, USL = 1500.0, 19000.0     # rancangan: spesifikasi 1.500 sampai 19.000 g (disimpan di tabel spec)
+SHEAR_LSL, SHEAR_USL = 800.0, 11000.0   # ASUMSI: spesifikasi shear test (rancangan hanya menyebut spec per model dan jenis uji)
 CAPACITY_G = 20000.0           # ASUMSI: kapasitas mesin DS20KG
 MODELS = ["Model A", "Model B"]
 CONDITIONS = ["before_oven", "after_oven"]

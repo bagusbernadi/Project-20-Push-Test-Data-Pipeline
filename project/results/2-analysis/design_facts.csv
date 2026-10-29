@@ -1,6 +1,6 @@
 fakta,rancangan,ukuran,nilai,nilai2,keterangan,kombinasi
-1,"satu kombinasi dibuat bervariasi besar sehingga Cpk < 1,33",Cpk terendah,1.043689939,1,"kombinasi di bawah 1,33",Model B before_oven
-2,rata-rata satu mesin turun sekitar 800 g selama sekitar 1 minggu setelah kalibrasi,selisih rata-rata jendela PT-02 terhadap di luar jendela (g),-807.8941534,1,tanggal mulai jendela sama dengan tanggal tertanam,
+1,"satu kombinasi dibuat bervariasi besar sehingga Cpk < 1,33",Cpk terendah,1.043054192,1,"kombinasi di bawah 1,33",Model B before_oven
+2,rata-rata satu mesin turun sekitar 800 g selama sekitar 1 minggu setelah kalibrasi,selisih rata-rata jendela PT-02 terhadap di luar jendela (g),-807.8522657,1,tanggal mulai jendela sama dengan tanggal tertanam,
 3,sekitar 3% file berformat titik ribuan dan koma desimal,persen file dengan format angka lain,0.03,36,file tertanam,
 4,"file bermasalah: header berbeda, kolom hilang, file kosong, file ganda",jenis file bermasalah tertanam,76,14,file bermasalah tertanam (salinan),
-5,"2% sampai 3% nilai tidak wajar (0, negatif, di atas kapasitas)",persen hasil ukur tidak valid di file yang dimuat,353,0.02476671578,baris tidak valid terdeteksi,353
+5,"2% sampai 3% nilai tidak wajar (0, negatif, di atas kapasitas)",persen hasil ukur tidak valid di file yang dimuat,446,0.02477364884,baris tidak valid terdeteksi,447

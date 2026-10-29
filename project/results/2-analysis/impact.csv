@@ -1,4 +1,4 @@
 menit_per_file,dasar,file_dimuat_periode,file_karantina_periode,file_per_tahun,menit_dihemat_per_file,menit_hemat_periode,jam_hemat_periode,jam_hemat_per_tahun,label
-3,0,1141,59,4576.538462,3,3423,57.05,228.8269231,estimated
-5,1,1141,59,4576.538462,5,5705,95.08333333,381.3782051,estimated
-10,0,1141,59,4576.538462,10,11410,190.1666667,762.7564103,estimated
+3,0,1440,60,5775.824176,3,4320,72,288.7912088,estimated
+5,1,1440,60,5775.824176,5,7200,120,481.3186813,estimated
+10,0,1440,60,5775.824176,10,14400,240,962.6373626,estimated

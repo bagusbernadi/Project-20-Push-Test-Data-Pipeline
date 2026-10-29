@@ -17,6 +17,7 @@ import common as CM
 
 HEADER_KEYS = ["Test Date", "Shift", "Machine", "Model", "Condition", "LSL (g)", "USL (g)"]
 DATA_HEADER = "Sample No;Force (g)"
+PROGRAMS = {"PUSH-DS20KG": "push", "SHEAR-DS20KG": "shear"}     # default bila config tidak memuat daftar program
 
 
 def load_config(path=None):
@@ -38,7 +39,7 @@ def parse_number(s):
     return float(s), "US"
 
 
-def parse_file(path, capacity=None, min_rows=1):
+def parse_file(path, capacity=None, min_rows=1, programs=None):
     """Baca satu file. Hasil: dict status ('ok' atau 'gagal'), error_type, header, values, rows_invalid, file_hash."""
     path = Path(path)
     raw = path.read_bytes()
@@ -55,6 +56,9 @@ def parse_file(path, capacity=None, min_rows=1):
         out["error_type"] = "format_mesin_baru"; return out
     if not lines[0].startswith("Test Program;"):
         out["error_type"] = "format_tidak_dikenal"; return out
+    test_type = (programs or PROGRAMS).get(lines[0].partition(";")[2].strip())
+    if test_type is None:
+        out["error_type"] = "jenis_uji_tidak_dikenal"; return out
     if not text.endswith("\n"):
         out["error_type"] = "terpotong"; return out
     lines = [l for l in lines if l != ""]
@@ -80,7 +84,7 @@ def parse_file(path, capacity=None, min_rows=1):
         date = datetime.strptime(hdr["Test Date"], "%d/%m/%Y").date()
     except ValueError:
         out["error_type"] = "tanggal_tidak_valid"; return out
-    out.update(status="ok", header=dict(machine=hdr["Machine"], model=hdr["Model"], condition=hdr["Condition"], shift=hdr["Shift"], date=date, lsl=parse_number(hdr["LSL (g)"])[0], usl=parse_number(hdr["USL (g)"])[0]),
+    out.update(status="ok", header=dict(test_type=test_type, machine=hdr["Machine"], model=hdr["Model"], condition=hdr["Condition"], shift=hdr["Shift"], date=date, lsl=parse_number(hdr["LSL (g)"])[0], usl=parse_number(hdr["USL (g)"])[0]),
                values=values, rows_read=len(values), rows_invalid=sum(1 for _, v in values if v <= 0 or v > capacity), number_format="US" if styles == {"US"} else "ID")
     return out
 
@@ -110,7 +114,7 @@ def ingest(con, incoming, quarantine, cfg=None):
     seen_before = set(seen)
     log = []
     for f in sorted(p for p in incoming.glob("*.csv")):
-        r = parse_file(f, cfg.get("capacity_g"), cfg.get("min_rows", 1))
+        r = parse_file(f, cfg.get("capacity_g"), cfg.get("min_rows", 1), cfg.get("programs"))
         row = dict(attempt=attempt, file_name=f.name, file_hash=r["file_hash"], status="", error_type="", rows_read=r["rows_read"], rows_invalid=r["rows_invalid"], run_id=None)
         if r["file_hash"] in seen:
             row.update(status="skipped", error_type="sudah_dimuat_sebelumnya" if r["file_hash"] in seen_before else "duplikat_isi", rows_read=0, rows_invalid=0)
@@ -120,13 +124,13 @@ def ingest(con, incoming, quarantine, cfg=None):
             row.update(status="quarantined", error_type=r["error_type"]); seen.add(r["file_hash"])
         else:
             h = r["header"]
-            lo, hi = spec.get((h["model"], "push"), (None, None))
+            lo, hi = spec.get((h["model"], h["test_type"]), (None, None))
             if lo is None:
                 shutil.copy(f, quarantine / f.name)
                 row.update(status="quarantined", error_type="model_tanpa_spesifikasi"); seen.add(r["file_hash"])
                 log.append(row); continue
             n_run += 1; run_id = f"R{n_run:04d}"
-            con.execute("INSERT INTO test_run VALUES (?,?,?,?,?,?,?,?,?,?)", [run_id, f.name, r["file_hash"], h["machine"], h["model"], h["condition"], "push", h["shift"], h["date"], r["number_format"]])
+            con.execute("INSERT INTO test_run VALUES (?,?,?,?,?,?,?,?,?,?)", [run_id, f.name, r["file_hash"], h["machine"], h["model"], h["condition"], h["test_type"], h["shift"], h["date"], r["number_format"]])
             con.executemany("INSERT INTO measurement VALUES (?,?,?,?,?)", [(run_id, s, v, "OK" if lo <= v <= hi else "NG", bool(0 < v <= (cfg.get("capacity_g") or CM.CAPACITY_G))) for s, v in r["values"]])
             row.update(status="loaded", run_id=run_id); seen.add(r["file_hash"])
         log.append(row)

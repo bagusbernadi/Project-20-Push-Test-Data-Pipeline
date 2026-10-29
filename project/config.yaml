@@ -5,6 +5,11 @@ database: pushtest.duckdb
 spec:                                  # tabel spec: batas spesifikasi per model dan jenis uji (g)
   - {model: Model A, test_type: push, lsl_g: 1500.0, usl_g: 19000.0}
   - {model: Model B, test_type: push, lsl_g: 1500.0, usl_g: 19000.0}
+  - {model: Model A, test_type: shear, lsl_g: 800.0, usl_g: 11000.0}     # ASUMSI
+  - {model: Model B, test_type: shear, lsl_g: 800.0, usl_g: 11000.0}     # ASUMSI
+programs:                              # nama program mesin (baris pertama file) -> jenis uji; program lain masuk karantina
+  PUSH-DS20KG: push
+  SHEAR-DS20KG: shear
 capacity_g: 20000.0                    # kapasitas mesin (DS20KG); nilai di atas ini tidak wajar (ASUMSI)
 min_rows: 1                            # minimal baris hasil ukur per file
 formats:                               # format mesin yang dikenali; format lain masuk karantina sampai aturannya ditambahkan

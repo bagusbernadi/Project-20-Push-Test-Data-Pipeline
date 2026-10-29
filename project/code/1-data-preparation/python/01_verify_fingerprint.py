@@ -1,7 +1,7 @@
 """01: Cocokkan data hasil generator dengan sidik jari SHA-256 di repo DataCenter (simulasi/fingerprints).
 
 Hash sama berarti data identik dengan data yang dipakai di laporan. Daftar sidik jari: docs/datacenter_fingerprint.csv.
-Hasil per berkas (1.215 berkas) diringkas; berkas yang tidak cocok dicantumkan.
+Hasil per berkas (jumlah berkas lihat fingerprint_check.csv) diringkas; berkas yang tidak cocok dicantumkan.
 """
 import hashlib
 import sys

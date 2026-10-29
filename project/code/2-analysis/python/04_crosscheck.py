@@ -17,7 +17,9 @@ import common as CM
 runs = pd.read_csv(CM.RES2 / "kpi_run.csv"); grp = pd.read_csv(CM.RES2 / "kpi_group.csv")
 import duckdb
 con = duckdb.connect(str(CM.DB_PATH), read_only=True)
-meas = con.execute("SELECT r.file_name, r.model, r.condition, m.seq, m.force_g FROM measurement m JOIN test_run r USING (run_id) WHERE m.is_valid ORDER BY r.run_id, m.seq").df()
+meas = con.execute("SELECT r.file_name, r.model, r.condition, m.seq, m.force_g FROM measurement m JOIN test_run r USING (run_id) WHERE m.is_valid AND r.test_type = 'push' ORDER BY r.run_id, m.seq").df()
+shear = con.execute("SELECT r.file_name, r.model, r.condition, m.force_g FROM measurement m JOIN test_run r USING (run_id) WHERE m.is_valid AND r.test_type = 'shear'").df()
+sgrp = pd.read_csv(CM.RES2 / "kpi_shear.csv")
 con.close()
 
 # (a) parser independen: baca file yang dimuat (nama dari test_run), tanpa ingest_lib
@@ -36,7 +38,7 @@ for name, g in meas.groupby("file_name"):
 pdf = pd.DataFrame(rows).merge(runs[["file_name", "model", "condition", "n", "mean_g", "min_g", "max_g", "sd_g"]], on="file_name", suffixes=("_pd", "_sql"))
 res = []
 for f in ("n", "mean_g", "min_g", "max_g", "sd_g"):
-    ok = np.isclose(pdf[f + "_pd"], pdf[f + "_sql"], atol=1e-6)
+    ok = np.isclose(pdf[f + "_pd"], pdf[f + "_sql"], atol=1e-6, equal_nan=True)   # sesi dengan 1 hasil valid: simpangan baku tak terdefinisi di kedua sisi
     res.append(dict(cek="SQL vs pandas (parser independen)", item=f"per sesi: {f}", dibandingkan=len(pdf), cocok=int(ok.sum())))
 allv = pd.concat([pd.DataFrame({"model": m, "condition": c, "v": [num(l.split(';')[1]) for l in (CM.INCOMING / n).read_text().strip().split("\n")[9:]]}) for n, m, c in meas.drop_duplicates("file_name")[["file_name", "model", "condition"]].itertuples(index=False)])
 allv = allv[(allv.v > 0) & (allv.v <= CM.CAPACITY_G)]
@@ -45,6 +47,15 @@ for r in grp.itertuples():
     cpk = min(CM.USL - d.mean(), d.mean() - CM.LSL) / (3 * d.std(ddof=1))
     for f, a, b in (("n", len(d), r.n), ("mean_g", d.mean(), r.mean_g), ("sd_g", d.std(ddof=1), r.sd_g), ("cpk", cpk, r.cpk), ("oos_rate", ((d < CM.LSL) | (d > CM.USL)).mean(), r.oos_rate)):
         res.append(dict(cek="SQL vs pandas (parser independen)", item=f"{r.model} {r.condition}: {f}", dibandingkan=1, cocok=int(np.isclose(a, b, atol=1e-6))))
+
+# (a2) shear test: SQL vs pandas per kelompok (parser independen, spesifikasi shear)
+sv = pd.concat([pd.DataFrame({"model": m, "condition": c_, "v": [num(l.split(";")[1]) for l in (CM.INCOMING / n).read_text().strip().split("\n")[9:]]}) for n, m, c_ in shear.drop_duplicates("file_name")[["file_name", "model", "condition"]].itertuples(index=False)])
+sv = sv[(sv.v > 0) & (sv.v <= CM.CAPACITY_G)]
+for r in sgrp.itertuples():
+    d = sv[(sv.model == r.model) & (sv.condition == r.condition)].v
+    cpk = min(CM.SHEAR_USL - d.mean(), d.mean() - CM.SHEAR_LSL) / (3 * d.std(ddof=1))
+    for f, a, b in (("n", len(d), r.n), ("mean_g", d.mean(), r.mean_g), ("sd_g", d.std(ddof=1), r.sd_g), ("cpk", cpk, r.cpk)):
+        res.append(dict(cek="SQL vs pandas (parser independen)", item=f"shear {r.model} {r.condition}: {f}", dibandingkan=1, cocok=int(np.isclose(a, b, atol=1e-6))))
 
 # (b) Excel
 wb = openpyxl.Workbook(); ws = wb.active; ws.title = "data"
