@@ -2,6 +2,8 @@
 
 # Project 20: Push Test Data Pipeline + Dashboard
 
+**Halaman web:** https://bagusbernadi.github.io/Project-20-Push-Test-Data-Pipeline/
+
 **Status: Selesai di branch `project-20-build` (belum di-merge ke `main`).** Halaman rancangan dan laporan: [`design-and-report/index.html`](design-and-report/index.html) (tab Design Project dan Report Project).
 
 **Tujuan:** membangun pipeline yang membaca file CSV mesin push test secara otomatis, membersihkan angkanya, dan menyimpannya di database, sehingga Max, Min, rata-rata, dan Cpk kekuatan rekat per model dan kondisi bisa dipantau di dashboard tanpa macro VBA dan copy-paste manual.
