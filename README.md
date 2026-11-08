@@ -4,7 +4,7 @@
 
 **Halaman web:** https://bagusbernadi.github.io/Project-20-Push-Test-Data-Pipeline/
 
-**Status: Selesai di branch `project-20-build` (belum di-merge ke `main`).** Halaman rancangan dan laporan: [`design-and-report/index.html`](design-and-report/index.html) (tab Design Project dan Report Project).
+**Status: Selesai dan digabung ke `main`.** Halaman rancangan dan laporan: [`design-and-report/index.html`](design-and-report/index.html) (tab Design Project dan Report Project).
 
 **Tujuan:** membangun pipeline yang membaca file CSV mesin push test secara otomatis, membersihkan angkanya, dan menyimpannya di database, sehingga Max, Min, rata-rata, dan Cpk kekuatan rekat per model dan kondisi bisa dipantau di dashboard tanpa macro VBA dan copy-paste manual.
 
@@ -58,7 +58,7 @@ jam hemat per tahun = file dimuat per tahun x menit manual per file / 60
 - **Data adalah simulasi**; angka menggambarkan simulasi, bukan lini produksi.
 - Macro lama ditiru dari deskripsi rancangan; workbook asli tidak tersedia. Menit manual per file, kapasitas mesin, dan aturan baca angka adalah asumsi.
 - Lima fakta data rancangan ditanam dan terdeteksi. Aliran shear test ditambahkan dengan nilai dasar dan spesifikasi asumsi; analisis Cpk, tren, dan dashboard hanya untuk push test. Generator dan pipeline ditulis oleh orang yang sama, jadi uji pemulihan optimistis.
-- Dashboard belum di-deploy (diuji AppTest: 13 dari 13 lulus) dan success criteria "orang awam menyebut kombinasi Cpk terendah dalam 1 menit" belum diuji; slide dan file contoh di data/samples tidak dibuat; branch belum di-merge ke main.
+- Dashboard belum di-deploy (diuji AppTest: 13 dari 13 lulus) dan success criteria "orang awam menyebut kombinasi Cpk terendah dalam 1 menit" belum diuji; slide dan file contoh di data/samples tidak dibuat.
 - Cek silang: 5.910 dari 215 cocok; pytest 13 dari 13 lulus.
 
 ## Menjalankan
